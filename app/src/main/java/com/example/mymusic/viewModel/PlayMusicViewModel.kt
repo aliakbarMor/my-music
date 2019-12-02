@@ -3,8 +3,6 @@ package com.example.mymusic.viewModel
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
-import android.media.MediaPlayer
-import android.util.Log
 import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
@@ -15,7 +13,6 @@ import com.bumptech.glide.Glide
 import com.example.mymusic.R
 import com.example.mymusic.database.AppRepository
 import com.example.mymusic.database.Music
-import com.example.mymusic.utility.MediaPlayerManager
 import com.example.mymusic.utility.milliToMinutes
 import com.example.mymusic.view.LyricDialog
 import javax.inject.Inject

@@ -15,6 +15,7 @@ import androidx.activity.addCallback
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -33,8 +34,7 @@ import com.example.mymusic.view.adapter.MusicListener
 import com.example.mymusic.viewModel.MusicListViewModel
 import com.example.mymusic.viewModel.MusicListViewModel.Companion.musicAdapter
 import com.google.android.material.navigation.NavigationView
-import kotlinx.android.synthetic.main.fragment_music_list.*
-import kotlinx.android.synthetic.main.nav_header.*
+import kotlinx.android.synthetic.main.nav_header.view.*
 import javax.inject.Inject
 
 
@@ -167,8 +167,7 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
     private var musicReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
 
-            Log.d("aaaaaaaaaaaaaa","broadcast has send")
-
+            Log.d("aaaaaaaaaa",binding!!.root.isVisible.toString())
 
             val metaRetriever = MediaMetadataRetriever()
             val musicList = getMusics(context)
@@ -180,12 +179,15 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
 
                 binding!!.textArtistAndTitle.text =
                     musicList[currentSongIndex].title!! + musicList[currentSongIndex].artist!!
-//                textTitleNavigation.text = musicList[currentSongIndex].title!!
-//                textArtistNavigation.text = musicList[currentSongIndex].artist!!
+
+                binding!!.navView.getHeaderView(0).textTitleNavigation.text =
+                    musicList[currentSongIndex].title!!
+                binding!!.navView.getHeaderView(0).textArtistNavigation.text =
+                    musicList[currentSongIndex].artist!!
+
                 metaRetriever.setDataSource(musicList[currentSongIndex].path!!)
+                if (metaRetriever.embeddedPicture != null) {
                 val art: ByteArray = metaRetriever.embeddedPicture
-                Log.d("aaaaaaaaaaaaaa",binding!!.textArtistAndTitle.text.toString())
-                if (art != null) {
                     val songImage = BitmapFactory.decodeByteArray(art, 0, art.size)
                     binding!!.imageArtist.setImageBitmap(songImage)
                     val bitmapRequestBuilder = Glide
@@ -193,12 +195,14 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
                         .asBitmap()
                         .load(songImage)
                         .centerCrop()
-//                    imageViewNavigation.post {
-//                        bitmapRequestBuilder.into(imageViewNavigation)
-//                    }
+                    binding!!.navView.getHeaderView(0).imageViewNavigation.post {
+                        bitmapRequestBuilder.into(binding!!.navView.getHeaderView(0).imageViewNavigation)
+
+                    }
                 } else {
                     binding!!.imageArtist.setImageResource(R.drawable.ic_music)
-//                    imageViewNavigation.setImageResource(R.drawable.ic_music)
+                    binding!!.navView.getHeaderView(0)
+                        .imageViewNavigation.setImageResource(R.drawable.ic_music)
                 }
             }
         }
