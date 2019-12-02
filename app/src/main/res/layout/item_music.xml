@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="music"
+            type="com.example.mymusic.viewModel.MusicItemViewModel" />
+
+    </data>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        app:cardElevation="2dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp">
+
+            <ImageView
+                android:id="@+id/image_singer"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                app:loadImg="@{music.path}" />
+
+            <LinearLayout
+                android:id="@+id/layout_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@+id/text_time"
+                android:layout_toEndOf="@+id/image_singer"
+                android:orientation="vertical"
+                android:padding="4dp">
+
+                <TextView
+                    android:id="@+id/text_name_music"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="music name"
+                    android:maxLines="1"
+                    android:text="@{music.title}"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/text_name_singer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="artist name"
+                    android:maxLines="1"
+                    android:text="@{music.artist}"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/text_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@+id/image_subject"
+                android:hint="00:00"
+                android:text="@{music.milliToTime(music.duration)}" />
+
+            <ImageView
+                android:id="@+id/image_subject"
+                android:layout_width="30dp"
+                android:layout_height="45dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="4dp"
+                android:src="@drawable/ic_more" />
+
+        </RelativeLayout>
+
+    </androidx.cardview.widget.CardView>
+
+</layout>

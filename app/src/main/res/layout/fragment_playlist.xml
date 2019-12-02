@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="playlist"
+            type="com.example.mymusic.viewModel.PlaylistViewModel" />
+    </data>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/image_singer"
+            android:layout_width="match_parent"
+            android:layout_height="390dp" />
+
+        <TextView
+            android:id="@+id/text_play_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="350dp"
+            android:layout_marginEnd="16dp"
+            android:text="@{playlist.playListName}"
+            android:textColor="@color/colorPrimary"
+            android:textSize="22sp"
+            android:textStyle="italic" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/image_singer"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            bind:recyclerMusic="@{playlist.musicList}">
+
+        </androidx.recyclerview.widget.RecyclerView>
+
+    </RelativeLayout>
+</layout>

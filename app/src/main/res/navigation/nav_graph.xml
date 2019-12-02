@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/musicList">
+
+    <fragment
+        android:id="@+id/musicList"
+        android:name="com.example.mymusic.view.MusicList"
+        android:label="fragment_music_list"
+        tools:layout="@layout/fragment_music_list" >
+        <action
+            android:id="@+id/action_musicList_to_playMusic"
+            app:destination="@id/playMusic"
+            app:enterAnim="@anim/fragment_fade_enter"
+            app:exitAnim="@anim/nav_default_exit_anim" />
+        <action
+            android:id="@+id/action_musicList_to_playlistFragment"
+            app:destination="@id/playlistFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/playMusic"
+        android:name="com.example.mymusic.view.PlayMusic"
+        android:label="fragment_play_music"
+        tools:layout="@layout/fragment_play_music" >
+        <argument
+            android:name="position"
+            app:argType="integer" />
+    </fragment>
+    <fragment
+        android:id="@+id/playlistFragment"
+        android:name="com.example.mymusic.view.PlaylistFragment"
+        android:label="fragment_playlist"
+        tools:layout="@layout/fragment_playlist" >
+        <argument
+            android:name="playlistName"
+            app:argType="string" />
+    </fragment>
+</navigation>
