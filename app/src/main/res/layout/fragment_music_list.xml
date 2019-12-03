@@ -113,22 +113,33 @@
                 android:background="#fff"
                 android:orientation="horizontal"
                 app:behavior_hideable="true"
-                app:behavior_peekHeight="25dp"
+                app:behavior_peekHeight="0dp"
                 app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
                 <ImageView
-                    android:id="@+id/imageArtist"
+                    android:id="@+id/imageArtistBottomSheet"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
-                    android:layout_marginLeft="8dp" />
+                    android:layout_marginStart="8dp"
+                    bind:loadImgNav="@{music.music.path}" />
 
                 <TextView
-                    android:id="@+id/textArtistAndTitle"
+                    android:id="@+id/textTitleBottomSheet"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_margin="4dp"
+                    android:maxLines="1"
+                    android:text="@{music.music.title}" />
+
+                <TextView
+                    android:id="@+id/textArtistBottomSheet"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_margin="4dp"
-                    android:maxLines="1" />
+                    android:maxLines="1"
+                    android:text="@{music.music.artist}" />
             </LinearLayout>
 
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
@@ -140,8 +151,7 @@
             android:layout_height="match_parent"
             android:layout_gravity="start"
             android:fitsSystemWindows="true"
-            app:headerLayout="@layout/nav_header"
-            app:menu="@menu/drawer_menu"/>
+            app:menu="@menu/drawer_menu" />
 
     </androidx.drawerlayout.widget.DrawerLayout>
 

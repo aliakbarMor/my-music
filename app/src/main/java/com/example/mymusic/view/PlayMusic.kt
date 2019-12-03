@@ -5,10 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
@@ -41,15 +43,15 @@ class PlayMusic : Fragment() {
     private var musics: List<Music>? = null
     lateinit var music: Music
 
-    private lateinit var contextCatch : Context
-    private lateinit var intent : Intent
+    private lateinit var contextCatch: Context
+    private lateinit var intent: Intent
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
 
-        contextCatch =activity!!.applicationContext
+        contextCatch = activity!!.applicationContext
         intent = Intent(contextCatch, MusicService::class.java)
 
         DaggerViewModelComponent.create().inject(this)
@@ -72,13 +74,14 @@ class PlayMusic : Fragment() {
         completeMusic()
         skipPrevious()
         skipNext()
-//        sendBroadcast()
-        onBackClick()
-
+        backHandle()
 
         return binding.root
     }
 
+    companion object {
+        var navigationResult: NavigationResult? = null
+    }
 
     private fun setCurrentPosition() {
         Thread(Runnable {
@@ -140,7 +143,6 @@ class PlayMusic : Fragment() {
         }
     }
 
-
     private fun skipPrevious() {
         binding.btnPrevious.setOnClickListener {
             val viewModel =
@@ -177,9 +179,23 @@ class PlayMusic : Fragment() {
         }
     }
 
-    private fun onBackClick() {
+    private fun backHandle() {
+        requireActivity().onBackPressedDispatcher.addCallback(this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    back()
+                }
+            })
         binding.backButton.setOnClickListener {
-            findNavController().popBackStack()
+            back()
         }
     }
+
+    private fun back() {
+        findNavController().popBackStack()
+        val bundle = Bundle()
+        bundle.putInt("currentPosition", position)
+        navigationResult!!.onNavigationResult(bundle)
+    }
+
 }

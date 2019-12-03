@@ -1,30 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="220dp"
-    android:background="#fff"
-    android:orientation="vertical">
+<layout xmlns:bind="http://schemas.android.com/apk/res-auto">
 
-    <ImageView
-        android:id="@+id/imageViewNavigation"
+    <data>
+
+        <variable
+            name="music"
+            type="com.example.mymusic.viewModel.MusicListViewModel" />
+    </data>
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="220dp"
+        android:background="#fff"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/textTitleNavigation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/textArtistNavigation"
-        android:padding="4dp"
-        android:paddingTop="8dp"
-        android:textColor="@color/colorPrimary" />
+        <ImageView
+            android:id="@+id/imageViewNavigation"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            bind:loadImgNav="@{music.music.path}" />
 
-    <TextView
-        android:id="@+id/textArtistNavigation"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:padding="4dp"
-        android:textColor="@color/colorPrimary" />
+        <TextView
+            android:id="@+id/textTitleNavigation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/textArtistNavigation"
+            android:padding="4dp"
+            android:paddingTop="8dp"
+            android:text="@{music.music.title}"
+            android:textColor="@color/colorPrimary" />
 
-</RelativeLayout>
+        <TextView
+            android:id="@+id/textArtistNavigation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:padding="4dp"
+            android:text="@{music.music.artist}"
+            android:textColor="@color/colorPrimary" />
+
+    </RelativeLayout>
+</layout>

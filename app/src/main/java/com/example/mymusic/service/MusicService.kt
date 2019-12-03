@@ -5,6 +5,7 @@ import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.IBinder
+import android.util.Log
 import com.example.mymusic.database.Music
 import com.example.mymusic.utility.MediaPlayerManager
 import com.example.mymusic.utility.getMusics
@@ -49,6 +50,7 @@ class MusicService : Service() {
     }
 
     private fun sendBroadcasts(position: Int, music: Music) {
+
         val bundle = Bundle()
         bundle.putInt("currentPosition", position)
         sendBroadcast(ACTION_MUSIC_COMPLETED, bundle)
