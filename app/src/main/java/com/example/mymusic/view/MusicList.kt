@@ -1,16 +1,16 @@
 package com.example.mymusic.view
 
 import android.Manifest
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
-import android.media.MediaMetadataRetriever
+import android.database.Cursor
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.*
+import android.widget.PopupMenu
+import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -32,9 +32,12 @@ import com.example.mymusic.service.MusicService
 import com.example.mymusic.utility.getMusics
 import com.example.mymusic.view.adapter.MusicListener
 import com.example.mymusic.viewModel.MusicListViewModel
+import com.example.mymusic.viewModel.MusicListViewModel.Companion.horizontalMusicAdapter
 import com.example.mymusic.viewModel.MusicListViewModel.Companion.musicAdapter
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.navigation.NavigationView
+import java.io.File
+import java.io.IOException
 import javax.inject.Inject
 
 
@@ -50,18 +53,95 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
     private lateinit var viewModel: MusicListViewModel
     private lateinit var controller: NavController
     private lateinit var binding: FragmentMusicListBinding
-    lateinit var navBinding: NavHeaderBinding
+    private lateinit var navBinding: NavHeaderBinding
     private lateinit var musicList: List<Music>
+    private var currentSongIndex: Int = 0
 
     override fun onMusicClicked(position: Int) {
         PlayMusic.navigationResult = this
-        val action = MusicListDirections.actionMusicListToPlayMusic(position)
-        controller = activity?.findNavController(R.id.nav_host_fragment)!!
-        controller.navigate(action)
+        goToFragmentPlayMusic(position)
     }
 
     override fun onMusicLongClicked(position: Int) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onSubjectClicked(position: Int, view: View) {
+        val popup = PopupMenu(activity?.applicationContext, view)
+        popup.menuInflater.inflate(R.menu.subject_menu, popup.menu)
+        val item = popup.menu.findItem(R.id.addTo)
+        addPlayListsToMenu(popup.menu, item.subMenu)
+
+        popup.setOnMenuItemClickListener { item: MenuItem ->
+            when (item.itemId) {
+                R.id.play -> {
+                    goToFragmentPlayMusic(position)
+                }
+                R.id.share -> {
+                    val intentShare = Intent(Intent.ACTION_SEND)
+                    val uriParse = Uri.parse(musicList[position].path)
+                    intentShare.putExtra(Intent.EXTRA_STREAM, uriParse)
+                    intentShare.type = "audio/*"
+                    startActivity(Intent.createChooser(intentShare, "Share Sound File"))
+                }
+                R.id.delete -> {
+                    val file = File(musicList[position].path)
+                    file.delete()
+                    if (file.exists()) {
+                        try {
+                            file.canonicalFile.delete()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                        if (file.exists()) {
+                            activity?.applicationContext?.deleteFile(file.name)
+                            if (file.exists()) {
+                                Thread(Runnable {
+                                    val cursor: Cursor? =
+                                        activity?.contentResolver?.query(
+                                            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                                            arrayOf(
+                                                MediaStore.Audio.Media._ID
+                                            ),
+                                            MediaStore.Audio.Media.DATA + " =?",
+                                            arrayOf<String>(file.absolutePath),
+                                            null
+                                        )
+                                    while (cursor!!.moveToNext()) {
+                                        val id = cursor.getString(
+                                            cursor.getColumnIndexOrThrow(
+                                                MediaStore.Audio.Media._ID
+                                            )
+                                        )
+                                        val uri = ContentUris.withAppendedId(
+                                            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id.toLong()
+                                        )
+                                        activity?.contentResolver?.delete(uri, null, null)
+                                    }
+                                    cursor.close()
+                                })
+                            }
+                        }
+                    }
+                    Toast.makeText(
+                        activity,
+                        musicList[position].title.toString() + " is deleted",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    binding.music = viewModel
+                    setMusicListener()
+                }
+                else -> {
+                    if (item.itemId != R.id.addTo) {
+                        val music = musicList[position]
+                        music.playListName = item.title.toString()
+                        AppRepository.getInstance(context!!).insertMusic(musicList[position])
+                    }
+                }
+            }
+            false
+        }
+        popup.show()
     }
 
     override fun onCreateView(
@@ -86,6 +166,7 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
         addNavViewMenu()
         setOnBackClick()
         setMusicListener()
+        onBottomSheetClick()
 
         return binding.root
     }
@@ -129,20 +210,11 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
     }
 
     private fun addNavViewMenu() {
+        binding.imageMenu.setOnClickListener {
+            binding.drawerLayout.openDrawer(GravityCompat.START)
+        }
         binding.navView.setNavigationItemSelectedListener(this)
-        AppRepository.getInstance(context!!).allPlaylists.observe(viewLifecycleOwner, Observer {
-            if (it.isNotEmpty()) {
-                for (int in it.indices)
-                    binding.navView.menu.removeItem(52)
-
-                for (int in it.indices) {
-                    if (it[int].playListName != "Favorite") {
-                        binding.navView.menu.add(0, 52, Menu.NONE, it[int].playListName)
-                            .setIcon(R.drawable.ic_music)
-                    }
-                }
-            }
-        })
+        addPlayListsToMenu(binding.navView.menu, null)
     }
 
     private fun setOnBackClick() {
@@ -159,6 +231,7 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
         Thread(Runnable {
             Thread.sleep(1000)
             musicAdapter.musicListener = this
+            horizontalMusicAdapter.musicListener = this
         }).start()
     }
 
@@ -179,33 +252,49 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
     }
 
     private fun setNavViewAndBottomShit(position: Int) {
-
-
+        // TODO set seek bar
         Thread(Runnable {
             while (!this.isResumed) {
-                Log.d("aaaaaaaaaaaaa", this.isResumed.toString())
                 Thread.sleep(100)
-                val bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
-                bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
             }
+            val bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
         }).start()
 
-
+        binding.invalidateAll()
         navBinding.invalidateAll()
         viewModel.music = musicList[position]
+        setMusicListener()
 
+    }
 
-        binding.notifyPropertyChanged(R.id.bottomSheet)
-        binding.notifyPropertyChanged(R.id.textArtistBottomSheet)
-        binding.notifyPropertyChanged(R.id.textTitleBottomSheet)
+    private fun onBottomSheetClick() {
+        binding.bottomSheet.setOnClickListener {
+            goToFragmentPlayMusic(currentSongIndex)
+        }
+    }
 
-        val metaRetriever = MediaMetadataRetriever()
-        metaRetriever.setDataSource(musicList[position].path)
-        if (metaRetriever.embeddedPicture != null) {
-            val art: ByteArray = metaRetriever.embeddedPicture
-            val songImage = BitmapFactory.decodeByteArray(art, 0, art.size)
-            binding.imageArtistBottomSheet.setImageBitmap(songImage)
-        } else binding.imageArtistBottomSheet.setImageResource(R.drawable.ic_music)
+    private fun goToFragmentPlayMusic(position: Int) {
+        val action = MusicListDirections.actionMusicListToPlayMusic(position)
+        controller = activity?.findNavController(R.id.nav_host_fragment)!!
+        controller.navigate(action)
+    }
+
+    private fun addPlayListsToMenu(menu: Menu, subMenu: SubMenu?) {
+        AppRepository.getInstance(context!!).allPlaylists.observe(viewLifecycleOwner, Observer {
+            if (it.isNotEmpty()) {
+                val menu1 = subMenu ?: menu
+
+                for (int in it.indices)
+                    menu1.removeItem(52)
+                for (int in it.indices) {
+                    if (it[int].playListName != "Favorite") {
+                        menu1.add(0, 52, Menu.NONE, it[int].playListName)
+                            .setIcon(R.drawable.ic_music)
+                    }
+                }
+            }
+        })
     }
 
     private var musicReceiver: BroadcastReceiver = object : BroadcastReceiver() {
@@ -213,7 +302,7 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
             val action = intent.action
             if (MusicService.ACTION_MUSIC_COMPLETED == action) {
                 val bundle = intent.extras
-                val currentSongIndex = bundle!!.getInt("currentPosition")
+                currentSongIndex = bundle!!.getInt("currentPosition")
                 setNavViewAndBottomShit(currentSongIndex)
             }
         }

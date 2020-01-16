@@ -50,7 +50,6 @@ class MusicService : Service() {
     }
 
     private fun sendBroadcasts(position: Int, music: Music) {
-
         val bundle = Bundle()
         bundle.putInt("currentPosition", position)
         sendBroadcast(ACTION_MUSIC_COMPLETED, bundle)

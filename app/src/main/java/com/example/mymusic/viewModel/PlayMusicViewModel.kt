@@ -29,10 +29,10 @@ class PlayMusicViewModel @Inject constructor() : ViewModel() {
     var currentPositionTime = MutableLiveData(0)
 
     companion object {
+        private val metaRetriever = MediaMetadataRetriever()
         @JvmStatic
         @BindingAdapter("app:loadImage")
         fun loadImage(imageView: ImageView, path: String) {
-            val metaRetriever = MediaMetadataRetriever()
             metaRetriever.setDataSource(path)
             val art = metaRetriever.embeddedPicture
             if (art != null) {
@@ -79,8 +79,8 @@ class PlayMusicViewModel @Inject constructor() : ViewModel() {
         @BindingAdapter("app:setCurrentPositionTime")
         fun setCurrentTime(textView: TextView, currentPositionTime: MutableLiveData<Int>) {
             currentPositionTime.observe(textView.context as LifecycleOwner, Observer {
-                    textView.text = milliToMinutes(it.toString())
-                })
+                textView.text = milliToMinutes(it.toString())
+            })
         }
 
         @JvmStatic

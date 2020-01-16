@@ -1,23 +1,25 @@
 package com.example.mymusic.view.adapter
 
+
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mymusic.R
 import com.example.mymusic.database.Music
+import com.example.mymusic.databinding.ItemMusicHorizontaBinding
 import com.example.mymusic.databinding.ItemMusicVerticalBinding
 import com.example.mymusic.viewModel.MusicItemViewModel
 
-class MusicAdapter(private val list: List<Music>) :
-    RecyclerView.Adapter<MusicAdapter.MusicViewHolder>() {
+class HorizontalMusicAdapter(private val list: List<Music>) :
+    RecyclerView.Adapter<HorizontalMusicAdapter.MusicViewHolder>() {
 
     var musicListener: MusicListener? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MusicViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        val itemMusicBinding: ItemMusicVerticalBinding =
-            DataBindingUtil.inflate(inflater, R.layout.item_music_vertical, parent, false)
+        val itemMusicBinding: ItemMusicHorizontaBinding =
+            DataBindingUtil.inflate(inflater, R.layout.item_music_horizonta, parent, false)
         return MusicViewHolder(itemMusicBinding)
     }
 
@@ -42,9 +44,9 @@ class MusicAdapter(private val list: List<Music>) :
     }
 
 
-    class MusicViewHolder(itemMusicBinding: ItemMusicVerticalBinding) :
-        RecyclerView.ViewHolder(itemMusicBinding.root) {
-        val binding = itemMusicBinding
+    class MusicViewHolder(itemMusicHorizontalBinding: ItemMusicHorizontaBinding) :
+        RecyclerView.ViewHolder(itemMusicHorizontalBinding.root) {
+        val binding = itemMusicHorizontalBinding
 
         fun bind(music: Music) {
             val musicItemViewModel = MusicItemViewModel(music)

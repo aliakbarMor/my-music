@@ -5,10 +5,12 @@ import android.media.MediaMetadataRetriever
 import android.widget.ImageView
 import androidx.databinding.BindingAdapter
 import androidx.lifecycle.ViewModel
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.mymusic.R
 import com.example.mymusic.database.Music
+import com.example.mymusic.view.adapter.HorizontalMusicAdapter
 import com.example.mymusic.view.adapter.MusicAdapter
 import javax.inject.Inject
 
@@ -20,6 +22,7 @@ class MusicListViewModel @Inject constructor() : ViewModel() {
     companion object {
 
         lateinit var musicAdapter: MusicAdapter
+        lateinit var horizontalMusicAdapter: HorizontalMusicAdapter
 
         @JvmStatic
         @BindingAdapter("bind:recyclerMusic")
@@ -29,11 +32,20 @@ class MusicListViewModel @Inject constructor() : ViewModel() {
         }
 
         @JvmStatic
+        @BindingAdapter("bind:recyclerHorizontalMusic")
+        fun recyclerHorizontalBinding(recyclerView: RecyclerView, list: List<Music>) {
+            horizontalMusicAdapter = HorizontalMusicAdapter(list)
+            recyclerView.layoutManager =
+                LinearLayoutManager(recyclerView.context, LinearLayoutManager.HORIZONTAL, false)
+            recyclerView.adapter = horizontalMusicAdapter
+        }
+
+
+        @JvmStatic
         @BindingAdapter("bind:loadImgNav")
         fun loadImgNav(imageView: ImageView, path: String?) {
             val metaRetriever = MediaMetadataRetriever()
             if (path != null) {
-
                 metaRetriever.setDataSource(path)
                 if (metaRetriever.embeddedPicture != null) {
                     val art: ByteArray = metaRetriever.embeddedPicture
@@ -49,6 +61,7 @@ class MusicListViewModel @Inject constructor() : ViewModel() {
                     imageView.setImageResource(R.drawable.ic_music)
             }
         }
+
 
     }
 }

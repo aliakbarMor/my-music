@@ -30,29 +30,24 @@
 
                 <com.google.android.material.appbar.CollapsingToolbarLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:fitsSystemWindows="true"
                     app:contentScrim="@color/colorVeryLightBlue"
                     app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_height="200dp"
                         android:layout_marginTop="?attr/actionBarSize"
-                        android:paddingTop="8dp"
                         app:layout_collapseMode="parallax">
-                        <!--                    TODO-->
 
-                        <ImageView
-                            android:id="@+id/playlistArt"
-                            android:layout_width="143dp"
-                            android:layout_height="146dp"
-                            android:layout_marginStart="8dp"
-                            android:contentDescription="8dp"
-                            android:scaleType="centerCrop"
-                            android:src="@mipmap/ic_launcher"
-                            app:layout_constraintLeft_toLeftOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" />
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/recyclerViewHorizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginTop="32dp"
+                            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                            bind:recyclerHorizontalMusic="@{music.musicList}" />
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -71,6 +66,14 @@
                             android:layout_marginEnd="12dp"
                             android:gravity="center"
                             android:orientation="horizontal">
+
+                            <ImageView
+                                android:id="@+id/image_menu"
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
+                                android:layout_marginEnd="12dp"
+                                android:paddingTop="2dp"
+                                android:src="@drawable/ic_menu" />
 
                             <TextView
                                 android:layout_width="wrap_content"

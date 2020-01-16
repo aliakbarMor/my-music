@@ -193,9 +193,9 @@ class PlayMusic : Fragment() {
 
     private fun back() {
         findNavController().popBackStack()
-        val bundle = Bundle()
-        bundle.putInt("currentPosition", position)
-        navigationResult!!.onNavigationResult(bundle)
+//        val bundle = Bundle()
+//        bundle.putInt("currentPosition", position)
+//        navigationResult!!.onNavigationResult(bundle)
     }
 
 }
