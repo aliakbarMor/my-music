@@ -7,7 +7,6 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import android.view.*
 import android.widget.PopupMenu
 import android.widget.Toast
@@ -15,6 +14,7 @@ import androidx.activity.addCallback
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.core.widget.addTextChangedListener
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -30,6 +30,7 @@ import com.example.mymusic.databinding.NavHeaderBinding
 import com.example.mymusic.di.component.DaggerViewModelComponent
 import com.example.mymusic.service.MusicService
 import com.example.mymusic.utility.getMusics
+import com.example.mymusic.utility.musics
 import com.example.mymusic.view.adapter.MusicListener
 import com.example.mymusic.viewModel.MusicListViewModel
 import com.example.mymusic.viewModel.MusicListViewModel.Companion.horizontalMusicAdapter
@@ -38,6 +39,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.navigation.NavigationView
 import java.io.File
 import java.io.IOException
+import java.util.*
 import javax.inject.Inject
 
 
@@ -46,24 +48,29 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
 
     companion object {
         private const val MY_PERMISSIONS_MUSIC: Int = 10001
+        var isCustomListMode = false
+        var isFilteredListMode = false
     }
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
     private lateinit var viewModel: MusicListViewModel
-    private lateinit var controller: NavController
     private lateinit var binding: FragmentMusicListBinding
     private lateinit var navBinding: NavHeaderBinding
     private lateinit var musicList: List<Music>
+    private lateinit var controller: NavController
     private var currentSongIndex: Int = 0
 
     override fun onMusicClicked(position: Int) {
+        isCustomListMode = false
         PlayMusic.navigationResult = this
         goToFragmentPlayMusic(position)
     }
 
     override fun onMusicLongClicked(position: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        if (musicAdapter.musicSelected.size != 0) {
+//            binding.toolbar
+        }
     }
 
     override fun onSubjectClicked(position: Int, view: View) {
@@ -76,6 +83,14 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
             when (item.itemId) {
                 R.id.play -> {
                     goToFragmentPlayMusic(position)
+                }
+                R.id.playNext -> {
+                    isCustomListMode = true
+                    musics?.add(currentSongIndex + 1, musicList[position])
+                    if (currentSongIndex < position) {
+                        musics?.removeAt(position + 1)
+                    } else
+                        musics?.removeAt(position)
                 }
                 R.id.share -> {
                     val intentShare = Intent(Intent.ACTION_SEND)
@@ -149,24 +164,24 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
         savedInstanceState: Bundle?
     ): View? {
         checkPermission()
-
         musicList = getMusics(activity!!.applicationContext)
         DaggerViewModelComponent.create().inject(this)
-        binding =
-            DataBindingUtil.inflate(inflater, R.layout.fragment_music_list, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_music_list, container, false)
         viewModel =
             ViewModelProviders.of(this, viewModelFactory).get(MusicListViewModel::class.java)
-        viewModel.musicList = getMusics(context!!)
+        viewModel.musicList = musicList
         binding.music = viewModel
 
         navBinding = DataBindingUtil.inflate(inflater, R.layout.nav_header, container, false)
         navBinding.music = viewModel
         binding.navView.addHeaderView(navBinding.root)
 
+        controller = activity?.findNavController(R.id.nav_host_fragment)!!
         addNavViewMenu()
         setOnBackClick()
         setMusicListener()
         onBottomSheetClick()
+        filter()
 
         return binding.root
     }
@@ -177,6 +192,11 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
         musicIntentFilter.addAction(MusicService.ACTION_MUSIC_COMPLETED)
         musicIntentFilter.addAction(MusicService.ACTION_MUSIC_IN_PROGRESS)
         activity!!.registerReceiver(musicReceiver, musicIntentFilter)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        activity?.unregisterReceiver(musicReceiver)
     }
 
     override fun onNavigationResult(result: Bundle) {
@@ -202,7 +222,7 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
                 val action =
                     MusicListDirections.actionMusicListToPlaylistFragment(menuItem.title.toString())
-                controller = activity?.findNavController(R.id.nav_host_fragment)!!
+//                controller = activity?.findNavController(R.id.nav_host_fragment)!!
                 controller.navigate(action)
             }
         }
@@ -263,7 +283,11 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
 
         binding.invalidateAll()
         navBinding.invalidateAll()
-        viewModel.music = musicList[position]
+        if (isCustomListMode) {
+            viewModel.music = musics!![position]
+        } else
+            viewModel.music = musicList[position]
+
         setMusicListener()
 
     }
@@ -276,7 +300,6 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
 
     private fun goToFragmentPlayMusic(position: Int) {
         val action = MusicListDirections.actionMusicListToPlayMusic(position)
-        controller = activity?.findNavController(R.id.nav_host_fragment)!!
         controller.navigate(action)
     }
 
@@ -295,6 +318,29 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
                 }
             }
         })
+    }
+
+    private fun filter() {
+        binding.textSearch.addTextChangedListener {
+            search()
+        }
+        binding.imgSearch.setOnClickListener {
+            search()
+        }
+    }
+
+    private fun search() {
+        val filteredMusic = ArrayList<Music>()
+        for (music in musicList) {
+            if (music.title!!.toLowerCase().contains(binding.textSearch.text.toString().toLowerCase()) ||
+                music.artist!!.toLowerCase().contains(binding.textSearch.text.toString().toLowerCase())
+            ) {
+                filteredMusic.add(music)
+            }
+        }
+        isFilteredListMode = true
+        musicAdapter.filterList(filteredMusic)
+        musics = filteredMusic
     }
 
     private var musicReceiver: BroadcastReceiver = object : BroadcastReceiver() {

@@ -86,10 +86,13 @@
                             <EditText
                                 android:id="@+id/text_search"
                                 android:layout_width="0dp"
+                                android:singleLine="true"
+                                android:imeOptions="actionDone"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1" />
 
                             <ImageView
+                                android:id="@+id/imgSearch"
                                 android:layout_width="25dp"
                                 android:layout_height="25dp"
                                 android:src="@drawable/ic_search" />

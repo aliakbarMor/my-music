@@ -27,6 +27,16 @@
                 android:layout_height="50dp"
                 app:loadImg="@{music.path}" />
 
+            <ImageView
+                android:id="@+id/icon_select"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_alignBottom="@+id/image_singer"
+                android:layout_toStartOf="@+id/layout_text"
+                android:src="@mipmap/ic_select"
+                android:visibility="gone" />
+
+
             <LinearLayout
                 android:id="@+id/layout_text"
                 android:layout_width="match_parent"

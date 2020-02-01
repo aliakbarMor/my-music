@@ -5,10 +5,9 @@ import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.IBinder
-import android.util.Log
 import com.example.mymusic.database.Music
 import com.example.mymusic.utility.MediaPlayerManager
-import com.example.mymusic.utility.getMusics
+import com.example.mymusic.utility.musics
 
 class MusicService : Service() {
 
@@ -18,7 +17,7 @@ class MusicService : Service() {
     }
 
     private lateinit var mediaPlayer: MediaPlayer
-    private lateinit var musics: List<Music>
+    private lateinit var musicsList: List<Music>
 
     override fun onBind(intent: Intent): IBinder {
         TODO("Return the communication channel to the service.")
@@ -26,16 +25,15 @@ class MusicService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        musics = getMusics(this)
         mediaPlayer = MediaPlayerManager.getInstance()
-
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent != null) {
+            musicsList = musics!!
             if (intent.hasExtra("position")) {
                 val position = intent.getIntExtra("position", -1)
-                val music = musics[position]
+                val music = musicsList[position]
 
                 playMusic(music)
                 sendBroadcasts(position, music)

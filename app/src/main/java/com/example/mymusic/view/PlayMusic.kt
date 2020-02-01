@@ -24,6 +24,9 @@ import com.example.mymusic.di.component.DaggerViewModelComponent
 import com.example.mymusic.service.MusicService
 import com.example.mymusic.utility.MediaPlayerManager
 import com.example.mymusic.utility.getMusics
+import com.example.mymusic.utility.musics
+import com.example.mymusic.view.MusicList.Companion.isCustomListMode
+import com.example.mymusic.view.MusicList.Companion.isFilteredListMode
 import com.example.mymusic.viewModel.PlayMusicViewModel
 import java.util.*
 import java.util.concurrent.Executors
@@ -40,7 +43,7 @@ class PlayMusic : Fragment() {
     private lateinit var viewModel: PlayMusicViewModel
 
     private var position: Int = 0
-    private var musics: List<Music>? = null
+    private var musicsList: List<Music>? = null
     lateinit var music: Music
 
     private lateinit var contextCatch: Context
@@ -55,9 +58,13 @@ class PlayMusic : Fragment() {
         intent = Intent(contextCatch, MusicService::class.java)
 
         DaggerViewModelComponent.create().inject(this)
-        musics = getMusics(context!!)
+        if (isCustomListMode || isFilteredListMode) {
+            musicsList = musics
+        }else
+            musicsList = getMusics(context!!)
+
         position = PlayMusicArgs.fromBundle(arguments!!).position
-        music = musics!![position]
+        music = musicsList!![position]
         binding =
             DataBindingUtil.inflate(inflater, R.layout.fragment_play_music, container, false)
         viewModel =
@@ -95,7 +102,7 @@ class PlayMusic : Fragment() {
     private fun setIsFavorite() {
         Executors.newCachedThreadPool().execute {
             val music = AppRepository.getInstance(context!!)
-                .getMusic(musics!![position].title!!, musics!![position].artist!!)
+                .getMusic(musicsList!![position].title!!, musicsList!![position].artist!!)
             if (music == null) {
                 viewModel.isFavorite.postValue(false)
             } else {
@@ -114,25 +121,25 @@ class PlayMusic : Fragment() {
                     contextCatch.startService(intent)
                 } else if (viewModel.isShuffle) {
                     val rand = Random()
-                    position = rand.nextInt(musics!!.size - 1)
-                    music = musics!![position]
-                    viewModel.music = musics!![position]
+                    position = rand.nextInt(musicsList!!.size - 1)
+                    music = musicsList!![position]
+                    viewModel.music = musicsList!![position]
                     binding.music = viewModel
                     intent.putExtra("position", position)
                     contextCatch.startService(intent)
                 } else {
-                    if (position < musics!!.size - 1) {
+                    if (position < musicsList!!.size - 1) {
                         position++
-                        music = musics!![position]
-                        viewModel.music = musics!![position]
+                        music = musicsList!![position]
+                        viewModel.music = musicsList!![position]
                         binding.music = viewModel
                         intent.putExtra("position", position)
                         contextCatch.startService(intent)
 
                     } else {
                         position = 0
-                        music = musics!![position]
-                        viewModel.music = musics!![position]
+                        music = musicsList!![position]
+                        viewModel.music = musicsList!![position]
                         binding.music = viewModel
                         intent.putExtra("position", position)
                         contextCatch.startService(intent)
@@ -149,12 +156,12 @@ class PlayMusic : Fragment() {
                 ViewModelProviders.of(this, viewModelFactory).get(PlayMusicViewModel::class.java)
             if (position > 0) {
                 position--
-                music = musics!![position]
+                music = musicsList!![position]
             } else {
-                position = musics!!.size - 1
-                music = musics!![position]
+                position = musicsList!!.size - 1
+                music = musicsList!![position]
             }
-            viewModel.music = musics!![position]
+            viewModel.music = musicsList!![position]
             binding.music = viewModel
             intent.putExtra("position", position)
             contextCatch.startService(intent)
@@ -165,14 +172,14 @@ class PlayMusic : Fragment() {
         binding.btnNext.setOnClickListener {
             val viewModel =
                 ViewModelProviders.of(this, viewModelFactory).get(PlayMusicViewModel::class.java)
-            if (position < musics!!.size - 1) {
+            if (position < musicsList!!.size - 1) {
                 position++
-                music = musics!![position]
+                music = musicsList!![position]
             } else {
                 position = 0
-                music = musics!![position]
+                music = musicsList!![position]
             }
-            viewModel.music = musics!![position]
+            viewModel.music = musicsList!![position]
             binding.music = viewModel
             intent.putExtra("position", position)
             contextCatch.startService(intent)

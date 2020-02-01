@@ -7,6 +7,9 @@ import com.example.mymusic.database.Music
 import java.util.ArrayList
 
 
+var musics: ArrayList<Music>? = null
+//var filteredMusics: ArrayList<Music>? = null
+
 fun getMusics(context: Context): List<Music> {
     val list = ArrayList<Music>()
     val cursor = context.contentResolver.query(
@@ -33,6 +36,8 @@ fun getMusics(context: Context): List<Music> {
         }
         cursor.close()
     }
+    if (musics == null)
+        musics = list
     return list
 }
 
