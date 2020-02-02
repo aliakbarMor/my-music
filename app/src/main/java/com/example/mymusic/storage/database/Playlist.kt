@@ -1,4 +1,4 @@
-package com.example.mymusic.database
+package com.example.mymusic.storage.database
 
 import androidx.room.Entity
 import androidx.room.Ignore

@@ -1,4 +1,4 @@
-package com.example.mymusic.database
+package com.example.mymusic.storage.database
 
 import android.content.Context
 import androidx.lifecycle.LiveData
@@ -29,6 +29,12 @@ class AppRepository private constructor(context: Context) {
     fun insertMusic(music: Music) {
         executor.execute {
             db.musicDAO.insertMusic(music)
+        }
+    }
+
+    fun insertSomeMusics(musics: ArrayList<Music>) {
+        executor.execute {
+            db.musicDAO.insertAll(musics)
         }
     }
 

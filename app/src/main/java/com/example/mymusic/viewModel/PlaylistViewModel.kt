@@ -1,7 +1,10 @@
 package com.example.mymusic.viewModel
 
+import androidx.databinding.BindingAdapter
 import androidx.lifecycle.ViewModel
-import com.example.mymusic.database.Music
+import androidx.recyclerview.widget.RecyclerView
+import com.example.mymusic.storage.database.Music
+import com.example.mymusic.view.adapter.MusicAdapter
 import javax.inject.Inject
 
 
@@ -15,6 +18,14 @@ class PlaylistViewModel @Inject constructor() : ViewModel() {
         this.playListName = playlistName
         this.musicList = musicList
 
+    }
+
+    companion object {
+        @JvmStatic
+        @BindingAdapter("bind:recyclerPlaylist")
+        fun recyclerBinding(recyclerView: RecyclerView, list: List<Music>) {
+            recyclerView.adapter = MusicAdapter(list)
+        }
     }
 
 }

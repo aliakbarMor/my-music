@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -17,9 +16,9 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import com.example.mymusic.R
 import com.example.mymusic.ViewModelFactory
-import com.example.mymusic.database.AppRepository
+import com.example.mymusic.storage.database.AppRepository
 import com.example.mymusic.databinding.FragmentPlayMusicBinding
-import com.example.mymusic.database.Music
+import com.example.mymusic.storage.database.Music
 import com.example.mymusic.di.component.DaggerViewModelComponent
 import com.example.mymusic.service.MusicService
 import com.example.mymusic.utility.MediaPlayerManager
@@ -58,10 +57,10 @@ class PlayMusic : Fragment() {
         intent = Intent(contextCatch, MusicService::class.java)
 
         DaggerViewModelComponent.create().inject(this)
-        if (isCustomListMode || isFilteredListMode) {
-            musicsList = musics
+        musicsList = if (isCustomListMode || isFilteredListMode) {
+            musics
         }else
-            musicsList = getMusics(context!!)
+            getMusics(context!!)
 
         position = PlayMusicArgs.fromBundle(arguments!!).position
         music = musicsList!![position]
@@ -200,9 +199,9 @@ class PlayMusic : Fragment() {
 
     private fun back() {
         findNavController().popBackStack()
-//        val bundle = Bundle()
-//        bundle.putInt("currentPosition", position)
-//        navigationResult!!.onNavigationResult(bundle)
+        val bundle = Bundle()
+        bundle.putInt("currentPosition", position)
+        navigationResult!!.onNavigationResult(bundle)
     }
 
 }

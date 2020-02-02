@@ -4,7 +4,6 @@ package com.example.mymusic.view
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,10 +12,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.example.mymusic.R
 import com.example.mymusic.ViewModelFactory
-import com.example.mymusic.database.AppRepository
-import com.example.mymusic.database.Music
+import com.example.mymusic.storage.database.AppRepository
+import com.example.mymusic.storage.database.Music
 import com.example.mymusic.databinding.FragmentPlaylistBinding
-import com.example.mymusic.di.component.DaggerAppComponent
 import com.example.mymusic.di.component.DaggerViewModelComponent
 import com.example.mymusic.viewModel.PlaylistViewModel
 import java.util.*

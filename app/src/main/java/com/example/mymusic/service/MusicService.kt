@@ -5,13 +5,14 @@ import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.IBinder
-import com.example.mymusic.database.Music
+import com.example.mymusic.storage.database.Music
 import com.example.mymusic.utility.MediaPlayerManager
 import com.example.mymusic.utility.musics
 
 class MusicService : Service() {
 
     companion object {
+        const val ACTION_MUSIC_STARTED = "com.example.mymusic.action.MUSIC_STARTED"
         const val ACTION_MUSIC_COMPLETED = "com.example.mymusic.action.MUSIC_COMPLETED"
         const val ACTION_MUSIC_IN_PROGRESS = "com.example.mymusic.action.MUSIC_IN_PROGRESS"
     }
@@ -50,7 +51,7 @@ class MusicService : Service() {
     private fun sendBroadcasts(position: Int, music: Music) {
         val bundle = Bundle()
         bundle.putInt("currentPosition", position)
-        sendBroadcast(ACTION_MUSIC_COMPLETED, bundle)
+        sendBroadcast(ACTION_MUSIC_STARTED, bundle)
 
         val totalTimeSecond = music.duration!!.toInt() / 1000
         Thread(Runnable {

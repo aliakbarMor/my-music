@@ -1,4 +1,4 @@
-package com.example.mymusic.database
+package com.example.mymusic.storage.database
 
 import androidx.lifecycle.LiveData
 import androidx.room.*

@@ -3,12 +3,12 @@
     <color name="colorPrimary">#4DA4BE</color>
     <color name="colorPrimaryDark">#004757</color>
     <color name="colorAccent">#000000</color>
-    <color name="colorWithe">#FFFFFF</color>
+    <color name="colorWhite">#FFFFFF</color>
     <color name="colorBlack">#000000</color>
     <color name="colorVeryLightBlue">#BCC1E6</color>
 
     <color name="LyricBackground">@color/colorVeryLightBlue</color>
 
 
-    <color name="background">@color/colorWithe</color>
+    <color name="background">@color/colorWhite</color>
 </resources>

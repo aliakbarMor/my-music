@@ -1,12 +1,14 @@
 package com.example.mymusic.view
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.*
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.*
 import android.widget.PopupMenu
 import android.widget.Toast
@@ -23,14 +25,16 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import com.example.mymusic.R
 import com.example.mymusic.ViewModelFactory
-import com.example.mymusic.database.AppRepository
-import com.example.mymusic.database.Music
+import com.example.mymusic.storage.database.AppRepository
+import com.example.mymusic.storage.database.Music
 import com.example.mymusic.databinding.FragmentMusicListBinding
 import com.example.mymusic.databinding.NavHeaderBinding
 import com.example.mymusic.di.component.DaggerViewModelComponent
 import com.example.mymusic.service.MusicService
+import com.example.mymusic.storage.sharedPrefs.PrefsManager
 import com.example.mymusic.utility.getMusics
 import com.example.mymusic.utility.musics
+import com.example.mymusic.view.adapter.MusicAdapter.Companion.musicSelected
 import com.example.mymusic.view.adapter.MusicListener
 import com.example.mymusic.viewModel.MusicListViewModel
 import com.example.mymusic.viewModel.MusicListViewModel.Companion.horizontalMusicAdapter
@@ -39,8 +43,8 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.navigation.NavigationView
 import java.io.File
 import java.io.IOException
-import java.util.*
 import javax.inject.Inject
+import kotlin.collections.ArrayList
 
 
 class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSelectedListener,
@@ -50,6 +54,7 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
         private const val MY_PERMISSIONS_MUSIC: Int = 10001
         var isCustomListMode = false
         var isFilteredListMode = false
+        var selectedMode = false
     }
 
     @Inject
@@ -59,25 +64,26 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
     private lateinit var navBinding: NavHeaderBinding
     private lateinit var musicList: List<Music>
     private lateinit var controller: NavController
+    private lateinit var prefsManager: PrefsManager
     private var currentSongIndex: Int = 0
 
     override fun onMusicClicked(position: Int) {
-        isCustomListMode = false
-        PlayMusic.navigationResult = this
-        goToFragmentPlayMusic(position)
+        if (selectedMode) {
+            toggleToolbar()
+        } else {
+            goToFragmentPlayMusic(position)
+        }
     }
 
     override fun onMusicLongClicked(position: Int) {
-        if (musicAdapter.musicSelected.size != 0) {
-//            binding.toolbar
-        }
+        toggleToolbar()
     }
 
     override fun onSubjectClicked(position: Int, view: View) {
         val popup = PopupMenu(activity?.applicationContext, view)
         popup.menuInflater.inflate(R.menu.subject_menu, popup.menu)
         val item = popup.menu.findItem(R.id.addTo)
-        addPlayListsToMenu(popup.menu, item.subMenu)
+        addPlayListsToMenuExceptFavorite(popup.menu, item.subMenu)
 
         popup.setOnMenuItemClickListener { item: MenuItem ->
             when (item.itemId) {
@@ -85,12 +91,7 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
                     goToFragmentPlayMusic(position)
                 }
                 R.id.playNext -> {
-                    isCustomListMode = true
-                    musics?.add(currentSongIndex + 1, musicList[position])
-                    if (currentSongIndex < position) {
-                        musics?.removeAt(position + 1)
-                    } else
-                        musics?.removeAt(position)
+                    playNextSong(position)
                 }
                 R.id.share -> {
                     val intentShare = Intent(Intent.ACTION_SEND)
@@ -177,11 +178,15 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
         binding.navView.addHeaderView(navBinding.root)
 
         controller = activity?.findNavController(R.id.nav_host_fragment)!!
+        prefsManager = PrefsManager(context!!)
+
         addNavViewMenu()
         setOnBackClick()
         setMusicListener()
         onBottomSheetClick()
         filter()
+
+        loadLastedMusic()
 
         return binding.root
     }
@@ -189,17 +194,14 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
     override fun onResume() {
         super.onResume()
         val musicIntentFilter = IntentFilter()
+        musicIntentFilter.addAction(MusicService.ACTION_MUSIC_STARTED)
         musicIntentFilter.addAction(MusicService.ACTION_MUSIC_COMPLETED)
         musicIntentFilter.addAction(MusicService.ACTION_MUSIC_IN_PROGRESS)
         activity!!.registerReceiver(musicReceiver, musicIntentFilter)
     }
 
-    override fun onPause() {
-        super.onPause()
-        activity?.unregisterReceiver(musicReceiver)
-    }
-
     override fun onNavigationResult(result: Bundle) {
+        selectedMode = false
         val currentSongIndex = result.getInt("currentPosition")
 //        setNavViewAndBottomShit(currentSongIndex)
 
@@ -234,13 +236,17 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
             binding.drawerLayout.openDrawer(GravityCompat.START)
         }
         binding.navView.setNavigationItemSelectedListener(this)
-        addPlayListsToMenu(binding.navView.menu, null)
+        addPlayListsToMenuExceptFavorite(binding.navView.menu, null)
     }
 
     private fun setOnBackClick() {
         activity?.onBackPressedDispatcher?.addCallback {
             if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
+            } else if (selectedMode) {
+                musicSelected.clear()
+                musicAdapter.notifyDataSetChanged()
+                toggleToolbar()
             } else if (!controller.popBackStack()) {
                 activity!!.finish()
             }
@@ -271,7 +277,14 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
         }
     }
 
-    private fun setNavViewAndBottomShit(position: Int) {
+    private fun loadLastedMusic() {
+        val music = prefsManager.loadLastMusicPlayed()
+        if (music.artist != null) {
+            setNavViewAndBottomShit(music)
+        }
+    }
+
+    private fun setNavViewAndBottomShit(music: Music) {
         // TODO set seek bar
         Thread(Runnable {
             while (!this.isResumed) {
@@ -281,12 +294,11 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
         }).start()
 
+        Log.d("aaaaaaaa", music.title.toString())
+
         binding.invalidateAll()
         navBinding.invalidateAll()
-        if (isCustomListMode) {
-            viewModel.music = musics!![position]
-        } else
-            viewModel.music = musicList[position]
+        viewModel.music = music
 
         setMusicListener()
 
@@ -294,20 +306,21 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
 
     private fun onBottomSheetClick() {
         binding.bottomSheet.setOnClickListener {
+            currentSongIndex = prefsManager.loadLastIndexMusic()
             goToFragmentPlayMusic(currentSongIndex)
         }
     }
 
     private fun goToFragmentPlayMusic(position: Int) {
+        PlayMusic.navigationResult = this
         val action = MusicListDirections.actionMusicListToPlayMusic(position)
         controller.navigate(action)
     }
 
-    private fun addPlayListsToMenu(menu: Menu, subMenu: SubMenu?) {
+    private fun addPlayListsToMenuExceptFavorite(menu: Menu, subMenu: SubMenu?) {
         AppRepository.getInstance(context!!).allPlaylists.observe(viewLifecycleOwner, Observer {
             if (it.isNotEmpty()) {
                 val menu1 = subMenu ?: menu
-
                 for (int in it.indices)
                     menu1.removeItem(52)
                 for (int in it.indices) {
@@ -329,6 +342,7 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
         }
     }
 
+    @SuppressLint("DefaultLocale")
     private fun search() {
         val filteredMusic = ArrayList<Music>()
         for (music in musicList) {
@@ -338,18 +352,82 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
                 filteredMusic.add(music)
             }
         }
-        isFilteredListMode = true
+        isFilteredListMode = binding.textSearch.toString() != ""
         musicAdapter.filterList(filteredMusic)
         musics = filteredMusic
     }
 
+    private fun playNextSong(position: Int) {
+        isCustomListMode = true
+        musics?.add(currentSongIndex + 1, musicList[position])
+        if (currentSongIndex < position) {
+            musics?.removeAt(position + 1)
+        } else
+            musics?.removeAt(position)
+        musicList = musics!!
+        musicAdapter.notifyDataSetChanged()
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun toggleToolbar() {
+        if (musicSelected.size != 0) {
+            selectedMode = true
+            binding.mainToolbar.visibility = View.GONE
+            binding.actionSelectToolbar.visibility = View.VISIBLE
+        } else {
+            selectedMode = false
+            binding.mainToolbar.visibility = View.VISIBLE
+            binding.actionSelectToolbar.visibility = View.GONE
+        }
+
+        binding.imageDisable.setOnClickListener {
+            disableSelectedMode()
+        }
+        binding.numberOfSelected.text = musicSelected.size.toString() + " selected"
+        binding.actionAddTo.setOnClickListener {
+            val popup = PopupMenu(activity?.applicationContext, binding.actionAddTo)
+            popup.menu.add(0, 51, Menu.NONE, "Favorite")
+            addPlayListsToMenuExceptFavorite(popup.menu, null)
+            popup.setOnMenuItemClickListener {
+                val someMusicAddToPlaylist = ArrayList<Music>()
+                for (i in 0 until musicSelected.size) {
+                    val music = musicSelected[i]
+                    music.playListName = it.title.toString()
+                    someMusicAddToPlaylist.add(music)
+                }
+                AppRepository.getInstance(context!!).insertSomeMusics(someMusicAddToPlaylist)
+                disableSelectedMode()
+                false
+            }
+            popup.show()
+        }
+        binding.actionPlayNext.setOnClickListener {
+            for (pos in musicAdapter.musicPositionSelected) {
+                playNextSong(pos)
+            }
+            disableSelectedMode()
+        }
+    }
+
+    private fun disableSelectedMode() {
+        musicSelected.clear()
+        musicAdapter.notifyDataSetChanged()
+        toggleToolbar()
+    }
+
     private var musicReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+
             val action = intent.action
-            if (MusicService.ACTION_MUSIC_COMPLETED == action) {
+            if (MusicService.ACTION_MUSIC_STARTED == action) {
                 val bundle = intent.extras
                 currentSongIndex = bundle!!.getInt("currentPosition")
-                setNavViewAndBottomShit(currentSongIndex)
+                val music = if (isCustomListMode) {
+                    musics!![currentSongIndex]
+                } else musicList[currentSongIndex]
+//                setNavViewAndBottomShit(music)
+                prefsManager.saveLastMusicPlayed(music)
+                prefsManager.saveLastIndexMusic(currentSongIndex)
             }
         }
     }

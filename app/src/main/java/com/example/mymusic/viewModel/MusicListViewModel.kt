@@ -9,9 +9,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.mymusic.R
-import com.example.mymusic.database.Music
+import com.example.mymusic.storage.database.Music
 import com.example.mymusic.utility.musics
-import com.example.mymusic.view.MusicList
 import com.example.mymusic.view.MusicList.Companion.isFilteredListMode
 import com.example.mymusic.view.adapter.HorizontalMusicAdapter
 import com.example.mymusic.view.adapter.MusicAdapter
@@ -30,10 +29,10 @@ class MusicListViewModel @Inject constructor() : ViewModel() {
         @JvmStatic
         @BindingAdapter("bind:recyclerMusic")
         fun recyclerBinding(recyclerView: RecyclerView, list: List<Music>) {
-            if (isFilteredListMode) {
-                musicAdapter = MusicAdapter(musics!!)
+            musicAdapter = if (isFilteredListMode) {
+                MusicAdapter(musics!!)
             } else
-                musicAdapter = MusicAdapter(list)
+                MusicAdapter(list)
             recyclerView.adapter = musicAdapter
         }
 

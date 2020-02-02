@@ -3,7 +3,7 @@ package com.example.mymusic.utility
 import android.content.Context
 import android.provider.MediaStore
 import android.text.TextUtils
-import com.example.mymusic.database.Music
+import com.example.mymusic.storage.database.Music
 import java.util.ArrayList
 
 

@@ -2,16 +2,12 @@ package com.example.mymusic.viewModel
 
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
-import android.os.Build
-import android.util.Log
 import android.widget.ImageView
-import androidx.annotation.RequiresApi
-import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
 import androidx.lifecycle.ViewModel
 import com.bumptech.glide.Glide
 import com.example.mymusic.R
-import com.example.mymusic.database.Music
+import com.example.mymusic.storage.database.Music
 import com.example.mymusic.utility.milliToMinutes
 
 class MusicItemViewModel(music: Music) : ViewModel() {

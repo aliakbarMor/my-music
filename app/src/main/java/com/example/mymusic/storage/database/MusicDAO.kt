@@ -1,4 +1,4 @@
-package com.example.mymusic.database
+package com.example.mymusic.storage.database
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
@@ -11,7 +11,7 @@ interface MusicDAO {
     fun insertMusic(music: Music)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAll(contacts: ArrayList<Music>)
+    fun insertAll(musics: ArrayList<Music>)
 
     @Query("DELETE FROM musics WHERE title = :title and artist = :artist and playListName = :playListName")
     fun deleteMusic(title: String, artist: String, playListName: String)

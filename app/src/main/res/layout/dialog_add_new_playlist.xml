@@ -6,7 +6,7 @@
 
         <variable
             name="playlist"
-            type="com.example.mymusic.database.Playlist" />
+            type="com.example.mymusic.storage.database.Playlist" />
     </data>
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"

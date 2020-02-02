@@ -1,8 +1,6 @@
 package com.example.mymusic.di.module
 
 import androidx.lifecycle.ViewModel
-import com.example.mymusic.database.Playlist
-import com.example.mymusic.view.PlaylistFragment
 import com.example.mymusic.viewModel.MusicListViewModel
 import com.example.mymusic.viewModel.PlayMusicViewModel
 import com.example.mymusic.viewModel.PlaylistViewModel

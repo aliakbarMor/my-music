@@ -1,14 +1,12 @@
-package com.example.mymusic.database
+package com.example.mymusic.storage.database
 
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import io.reactivex.annotations.NonNull
 
 
 @Database(entities = [Music::class, Playlist::class], version = 1)

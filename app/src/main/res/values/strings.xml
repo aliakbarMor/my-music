@@ -15,4 +15,6 @@
     <string name="sleep_timer">Sleep timer</string>
     <string name="playlist">Playlist</string>
     <string name="about">About</string>
+    <string name="play_next">play_next</string>
+    <string name="add_to">Add to</string>
 </resources>

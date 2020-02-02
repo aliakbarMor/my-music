@@ -6,9 +6,8 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mymusic.R
-import com.example.mymusic.database.Music
+import com.example.mymusic.storage.database.Music
 import com.example.mymusic.databinding.ItemMusicHorizontaBinding
-import com.example.mymusic.databinding.ItemMusicVerticalBinding
 import com.example.mymusic.viewModel.MusicItemViewModel
 
 class HorizontalMusicAdapter(private val list: List<Music>) :

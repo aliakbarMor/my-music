@@ -3,12 +3,11 @@ package com.example.mymusic.view
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
-import android.util.Log
 import android.view.LayoutInflater
 import androidx.databinding.DataBindingUtil
 import com.example.mymusic.R
-import com.example.mymusic.database.AppRepository
-import com.example.mymusic.database.Playlist
+import com.example.mymusic.storage.database.AppRepository
+import com.example.mymusic.storage.database.Playlist
 import com.example.mymusic.databinding.DialogAddNewPlaylistBinding
 
 class AddNewPlaylistDialog private constructor() {

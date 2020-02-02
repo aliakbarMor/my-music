@@ -11,8 +11,8 @@ import androidx.databinding.BindingAdapter
 import androidx.lifecycle.*
 import com.bumptech.glide.Glide
 import com.example.mymusic.R
-import com.example.mymusic.database.AppRepository
-import com.example.mymusic.database.Music
+import com.example.mymusic.storage.database.AppRepository
+import com.example.mymusic.storage.database.Music
 import com.example.mymusic.utility.milliToMinutes
 import com.example.mymusic.view.LyricDialog
 import javax.inject.Inject

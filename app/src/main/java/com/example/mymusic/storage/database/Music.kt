@@ -1,11 +1,8 @@
-package com.example.mymusic.database
+package com.example.mymusic.storage.database
 
-import android.content.Intent
-import android.os.Bundle
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import com.example.mymusic.service.MusicService
 import com.example.mymusic.utility.MediaPlayerManager
 
 
