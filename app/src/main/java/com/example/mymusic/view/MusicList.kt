@@ -21,16 +21,17 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import com.example.mymusic.R
 import com.example.mymusic.ViewModelFactory
-import com.example.mymusic.storage.database.AppRepository
-import com.example.mymusic.storage.database.Music
 import com.example.mymusic.databinding.FragmentMusicListBinding
 import com.example.mymusic.databinding.NavHeaderBinding
 import com.example.mymusic.di.component.DaggerViewModelComponent
 import com.example.mymusic.service.MusicService
+import com.example.mymusic.storage.database.AppRepository
+import com.example.mymusic.storage.database.Music
 import com.example.mymusic.storage.sharedPrefs.PrefsManager
 import com.example.mymusic.utility.getMusics
 import com.example.mymusic.utility.musics
@@ -44,7 +45,6 @@ import com.google.android.material.navigation.NavigationView
 import java.io.File
 import java.io.IOException
 import javax.inject.Inject
-import kotlin.collections.ArrayList
 
 
 class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSelectedListener,
@@ -91,7 +91,7 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
                     goToFragmentPlayMusic(position)
                 }
                 R.id.playNext -> {
-                    playNextSong(position)
+                    playingNextSong(position)
                 }
                 R.id.share -> {
                     val intentShare = Intent(Intent.ACTION_SEND)
@@ -197,7 +197,8 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
         musicIntentFilter.addAction(MusicService.ACTION_MUSIC_STARTED)
         musicIntentFilter.addAction(MusicService.ACTION_MUSIC_COMPLETED)
         musicIntentFilter.addAction(MusicService.ACTION_MUSIC_IN_PROGRESS)
-        activity!!.registerReceiver(musicReceiver, musicIntentFilter)
+        LocalBroadcastManager.getInstance(activity!!)
+            .registerReceiver(musicReceiver, musicIntentFilter)
     }
 
     override fun onNavigationResult(result: Bundle) {
@@ -294,8 +295,6 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
         }).start()
 
-        Log.d("aaaaaaaa", music.title.toString())
-
         binding.invalidateAll()
         navBinding.invalidateAll()
         viewModel.music = music
@@ -357,7 +356,7 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
         musics = filteredMusic
     }
 
-    private fun playNextSong(position: Int) {
+    private fun playingNextSong(position: Int) {
         isCustomListMode = true
         musics?.add(currentSongIndex + 1, musicList[position])
         if (currentSongIndex < position) {
@@ -403,7 +402,7 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
         }
         binding.actionPlayNext.setOnClickListener {
             for (pos in musicAdapter.musicPositionSelected) {
-                playNextSong(pos)
+                playingNextSong(pos)
             }
             disableSelectedMode()
         }
@@ -422,7 +421,7 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
             if (MusicService.ACTION_MUSIC_STARTED == action) {
                 val bundle = intent.extras
                 currentSongIndex = bundle!!.getInt("currentPosition")
-                val music = if (isCustomListMode) {
+                val music = if (isCustomListMode || isFilteredListMode) {
                     musics!![currentSongIndex]
                 } else musicList[currentSongIndex]
 //                setNavViewAndBottomShit(music)

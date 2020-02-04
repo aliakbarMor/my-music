@@ -1,8 +1,10 @@
 package com.example.mymusic.view
 
 
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.media.MediaPlayer
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -20,6 +22,7 @@ import com.example.mymusic.storage.database.AppRepository
 import com.example.mymusic.databinding.FragmentPlayMusicBinding
 import com.example.mymusic.storage.database.Music
 import com.example.mymusic.di.component.DaggerViewModelComponent
+import com.example.mymusic.notification.MusicNotification
 import com.example.mymusic.service.MusicService
 import com.example.mymusic.utility.MediaPlayerManager
 import com.example.mymusic.utility.getMusics
@@ -48,6 +51,10 @@ class PlayMusic : Fragment() {
     private lateinit var contextCatch: Context
     private lateinit var intent: Intent
 
+    companion object {
+        var navigationResult: NavigationResult? = null
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -59,7 +66,7 @@ class PlayMusic : Fragment() {
         DaggerViewModelComponent.create().inject(this)
         musicsList = if (isCustomListMode || isFilteredListMode) {
             musics
-        }else
+        } else
             getMusics(context!!)
 
         position = PlayMusicArgs.fromBundle(arguments!!).position
@@ -75,18 +82,28 @@ class PlayMusic : Fragment() {
         intent.putExtra("position", position)
         activity?.startService(intent)
 
+        binding.btnPrevious.setOnClickListener {
+            skipPrevious()
+        }
+        binding.btnNext.setOnClickListener {
+            skipNext()
+        }
+
         setIsFavorite()
         setCurrentPosition()
         completeMusic()
-        skipPrevious()
-        skipNext()
         backHandle()
 
         return binding.root
     }
 
-    companion object {
-        var navigationResult: NavigationResult? = null
+    override fun onResume() {
+        super.onResume()
+        val musicIntentFilter = IntentFilter()
+        musicIntentFilter.addAction(MusicNotification.ACTION_MUSIC_SKIP_NEXT)
+        musicIntentFilter.addAction(MusicNotification.ACTION_MUSIC_STOP)
+        musicIntentFilter.addAction(MusicNotification.ACTION_MUSIC_SKIP_PREVIOUS)
+        activity!!.registerReceiver(notificationReceiver, musicIntentFilter)
     }
 
     private fun setCurrentPosition() {
@@ -100,7 +117,7 @@ class PlayMusic : Fragment() {
 
     private fun setIsFavorite() {
         Executors.newCachedThreadPool().execute {
-            val music = AppRepository.getInstance(context!!)
+            val music: Music? = AppRepository.getInstance(context!!)
                 .getMusic(musicsList!![position].title!!, musicsList!![position].artist!!)
             if (music == null) {
                 viewModel.isFavorite.postValue(false)
@@ -150,39 +167,35 @@ class PlayMusic : Fragment() {
     }
 
     private fun skipPrevious() {
-        binding.btnPrevious.setOnClickListener {
-            val viewModel =
-                ViewModelProviders.of(this, viewModelFactory).get(PlayMusicViewModel::class.java)
-            if (position > 0) {
-                position--
-                music = musicsList!![position]
-            } else {
-                position = musicsList!!.size - 1
-                music = musicsList!![position]
-            }
-            viewModel.music = musicsList!![position]
-            binding.music = viewModel
-            intent.putExtra("position", position)
-            contextCatch.startService(intent)
+        viewModel =
+            ViewModelProviders.of(this, viewModelFactory).get(PlayMusicViewModel::class.java)
+        if (position > 0) {
+            position--
+            music = musicsList!![position]
+        } else {
+            position = musicsList!!.size - 1
+            music = musicsList!![position]
         }
+        viewModel.music = musicsList!![position]
+        binding.music = viewModel
+        intent.putExtra("position", position)
+        contextCatch.startService(intent)
     }
 
     private fun skipNext() {
-        binding.btnNext.setOnClickListener {
-            val viewModel =
-                ViewModelProviders.of(this, viewModelFactory).get(PlayMusicViewModel::class.java)
-            if (position < musicsList!!.size - 1) {
-                position++
-                music = musicsList!![position]
-            } else {
-                position = 0
-                music = musicsList!![position]
-            }
-            viewModel.music = musicsList!![position]
-            binding.music = viewModel
-            intent.putExtra("position", position)
-            contextCatch.startService(intent)
+        viewModel =
+            ViewModelProviders.of(this, viewModelFactory).get(PlayMusicViewModel::class.java)
+        if (position < musicsList!!.size - 1) {
+            position++
+            music = musicsList!![position]
+        } else {
+            position = 0
+            music = musicsList!![position]
         }
+        viewModel.music = musicsList!![position]
+        binding.music = viewModel
+        intent.putExtra("position", position)
+        contextCatch.startService(intent)
     }
 
     private fun backHandle() {
@@ -204,4 +217,19 @@ class PlayMusic : Fragment() {
         navigationResult!!.onNavigationResult(bundle)
     }
 
+    private val notificationReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent) {
+            when (intent.action) {
+                MusicNotification.ACTION_MUSIC_SKIP_NEXT -> {
+                    skipNext()
+                }
+                MusicNotification.ACTION_MUSIC_SKIP_PREVIOUS -> {
+                    skipPrevious()
+                }
+                MusicNotification.ACTION_MUSIC_STOP -> {
+                    viewModel.onPauseAndPlayClicked()
+                }
+            }
+        }
+    }
 }

@@ -5,6 +5,8 @@ import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.IBinder
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.example.mymusic.notification.MusicNotification
 import com.example.mymusic.storage.database.Music
 import com.example.mymusic.utility.MediaPlayerManager
 import com.example.mymusic.utility.musics
@@ -35,7 +37,7 @@ class MusicService : Service() {
             if (intent.hasExtra("position")) {
                 val position = intent.getIntExtra("position", -1)
                 val music = musicsList[position]
-
+                MusicNotification.getInstance(this)?.showNotification(music, position)
                 playMusic(music)
                 sendBroadcasts(position, music)
             }
@@ -68,7 +70,7 @@ class MusicService : Service() {
     private fun sendBroadcast(action: String, bundle: Bundle) {
         val intent = Intent(action)
         intent.putExtras(bundle)
-        sendBroadcast(intent)
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
 }
