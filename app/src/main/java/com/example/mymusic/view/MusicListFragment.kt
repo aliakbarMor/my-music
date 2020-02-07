@@ -419,8 +419,8 @@ class MusicListFragment : Fragment(), MusicListener,
         override fun onReceive(context: Context, intent: Intent) {
 
             val action = intent.action
-            if (MusicService.ACTION_MUSIC_STARTED == action) {
-                val bundle = intent.extras
+            val bundle = intent.extras
+            if (action == MusicService.ACTION_MUSIC_STARTED) {
                 currentSongIndex = bundle!!.getInt("currentPosition")
                 val music = if (isCustomListMode || isFilteredListMode) {
                     musics!![currentSongIndex]
@@ -428,6 +428,8 @@ class MusicListFragment : Fragment(), MusicListener,
                 setNavViewAndBottomShit(music)
                 prefsManager.saveLastMusicPlayed(music)
                 prefsManager.saveLastIndexMusic(currentSongIndex)
+            } else if (action == MusicService.ACTION_MUSIC_IN_PROGRESS) {
+                viewModel.currentPositionTime.postValue(bundle!!.getInt("currentPositionTime"))
             }
         }
     }

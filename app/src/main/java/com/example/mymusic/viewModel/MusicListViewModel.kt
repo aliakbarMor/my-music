@@ -3,7 +3,11 @@ package com.example.mymusic.viewModel
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.widget.ImageView
+import android.widget.SeekBar
 import androidx.databinding.BindingAdapter
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,6 +24,8 @@ class MusicListViewModel @Inject constructor() : ViewModel() {
 
     var musicList: List<Music>? = null
     var music: Music? = null
+
+    var currentPositionTime = MutableLiveData(0)
 
     companion object {
 
@@ -67,6 +73,17 @@ class MusicListViewModel @Inject constructor() : ViewModel() {
             }
         }
 
+        @JvmStatic
+        @BindingAdapter("app:showProgress")
+        fun setProgress(seekBar: SeekBar, viewModel: MusicListViewModel) {
+            viewModel.currentPositionTime.observe(seekBar.context as LifecycleOwner,
+                Observer {
+                    if (viewModel.currentPositionTime.value!! >= 0) {
+                        seekBar.progress = it.toInt() * 100 / viewModel.music?.duration!!.toInt()
+                    }
+                })
+
+        }
 
     }
 }

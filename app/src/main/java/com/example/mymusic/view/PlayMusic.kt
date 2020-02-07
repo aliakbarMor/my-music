@@ -169,7 +169,7 @@ class PlayMusic : Fragment() {
                         contextCatch.startService(intent)
                     }
                 }
-
+                setIsFavorite()
             }
         }
     }
@@ -186,6 +186,7 @@ class PlayMusic : Fragment() {
         binding.music = viewModel
         intent.putExtra("position", position)
         contextCatch.startService(intent)
+        setIsFavorite()
     }
 
     private fun skipNext() {
@@ -200,6 +201,7 @@ class PlayMusic : Fragment() {
         binding.music = viewModel
         intent.putExtra("position", position)
         contextCatch.startService(intent)
+        setIsFavorite()
     }
 
     private fun backHandle() {
