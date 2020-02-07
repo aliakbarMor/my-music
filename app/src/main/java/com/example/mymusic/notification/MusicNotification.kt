@@ -85,8 +85,8 @@ class MusicNotification private constructor(private val context: Context) {
         val art = metaRetriever.embeddedPicture
 
         builder
-            .setContentTitle(music.artist)
-            .setContentText(music.title)
+            .setContentTitle(music.title)
+            .setContentText(music.artist)
             .setContentIntent(mainPendingIntent)
             .setAutoCancel(true)
             .setOngoing(true)

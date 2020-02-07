@@ -215,7 +215,9 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
                 SleepTimerDialog.getInstance().showDialog(activity!!)
             }
             R.id.about -> {
-//                TODO
+                binding.drawerLayout.closeDrawer(GravityCompat.START)
+                val action = MusicListDirections.actionMusicListToAboutFragment()
+                controller.navigate(action)
             }
             R.id.addNewPlaylist -> {
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
@@ -225,7 +227,6 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
                 val action =
                     MusicListDirections.actionMusicListToPlaylistFragment(menuItem.title.toString())
-//                controller = activity?.findNavController(R.id.nav_host_fragment)!!
                 controller.navigate(action)
             }
         }
@@ -424,7 +425,7 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
                 val music = if (isCustomListMode || isFilteredListMode) {
                     musics!![currentSongIndex]
                 } else musicList[currentSongIndex]
-//                setNavViewAndBottomShit(music)
+                setNavViewAndBottomShit(music)
                 prefsManager.saveLastMusicPlayed(music)
                 prefsManager.saveLastIndexMusic(currentSongIndex)
             }

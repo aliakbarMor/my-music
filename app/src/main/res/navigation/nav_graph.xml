@@ -18,6 +18,9 @@
         <action
             android:id="@+id/action_musicList_to_playlistFragment"
             app:destination="@id/playlistFragment" />
+        <action
+            android:id="@+id/action_musicList_to_aboutFragment"
+            app:destination="@id/aboutFragment" />
     </fragment>
     <fragment
         android:id="@+id/playMusic"
@@ -36,5 +39,13 @@
         <argument
             android:name="playlistName"
             app:argType="string" />
+        <action
+            android:id="@+id/action_playlistFragment_to_playMusic"
+            app:destination="@id/playMusic" />
     </fragment>
+    <fragment
+        android:id="@+id/aboutFragment"
+        android:name="com.example.mymusic.view.AboutFragment"
+        android:label="fragment_about"
+        tools:layout="@layout/fragment_about" />
 </navigation>

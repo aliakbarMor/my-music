@@ -10,18 +10,20 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import com.example.mymusic.GlideManager
 import com.example.mymusic.R
 import com.example.mymusic.ViewModelFactory
 import com.example.mymusic.storage.database.AppRepository
 import com.example.mymusic.storage.database.Music
 import com.example.mymusic.databinding.FragmentPlaylistBinding
 import com.example.mymusic.di.component.DaggerViewModelComponent
+import com.example.mymusic.view.adapter.MusicListener
 import com.example.mymusic.viewModel.PlaylistViewModel
 import java.util.*
 import java.util.concurrent.Executors
 import javax.inject.Inject
 
-class PlaylistFragment : Fragment() {
+class PlaylistFragment : Fragment(), MusicListener {
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
@@ -71,6 +73,18 @@ class PlaylistFragment : Fragment() {
                 }
             }, 0, 10000)
         }
+    }
+
+    override fun onMusicClicked(position: Int) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onMusicLongClicked(position: Int) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onSubjectClicked(position: Int, view: View) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
 

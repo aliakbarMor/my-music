@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.media.MediaPlayer
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -24,6 +25,7 @@ import com.example.mymusic.storage.database.Music
 import com.example.mymusic.di.component.DaggerViewModelComponent
 import com.example.mymusic.notification.MusicNotification
 import com.example.mymusic.service.MusicService
+import com.example.mymusic.storage.sharedPrefs.PrefsManager
 import com.example.mymusic.utility.MediaPlayerManager
 import com.example.mymusic.utility.getMusics
 import com.example.mymusic.utility.musics
@@ -79,8 +81,6 @@ class PlayMusic : Fragment() {
         viewModel.music = music
         binding.music = viewModel
 
-        intent.putExtra("position", position)
-        activity?.startService(intent)
 
         binding.btnPrevious.setOnClickListener {
             skipPrevious()
@@ -93,6 +93,14 @@ class PlayMusic : Fragment() {
         setCurrentPosition()
         completeMusic()
         backHandle()
+
+        val lastMusicPlayed = PrefsManager(context!!).loadLastMusicPlayed()
+        if (mediaPlayer.isPlaying && music.artist == lastMusicPlayed.artist && music.title == lastMusicPlayed.title) {
+            return binding.root
+        }
+
+        intent.putExtra("position", position)
+        activity?.startService(intent)
 
         return binding.root
     }
@@ -167,8 +175,6 @@ class PlayMusic : Fragment() {
     }
 
     private fun skipPrevious() {
-        viewModel =
-            ViewModelProviders.of(this, viewModelFactory).get(PlayMusicViewModel::class.java)
         if (position > 0) {
             position--
             music = musicsList!![position]
@@ -183,8 +189,6 @@ class PlayMusic : Fragment() {
     }
 
     private fun skipNext() {
-        viewModel =
-            ViewModelProviders.of(this, viewModelFactory).get(PlayMusicViewModel::class.java)
         if (position < musicsList!!.size - 1) {
             position++
             music = musicsList!![position]
