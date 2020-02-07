@@ -21,10 +21,12 @@ class PlaylistViewModel @Inject constructor() : ViewModel() {
     }
 
     companion object {
+        lateinit var musicAdapter: MusicAdapter
         @JvmStatic
         @BindingAdapter("bind:recyclerPlaylist")
         fun recyclerBinding(recyclerView: RecyclerView, list: List<Music>) {
-            recyclerView.adapter = MusicAdapter(list)
+            musicAdapter = MusicAdapter(list)
+            recyclerView.adapter = musicAdapter
         }
     }
 

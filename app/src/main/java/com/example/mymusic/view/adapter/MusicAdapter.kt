@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.mymusic.R
 import com.example.mymusic.storage.database.Music
 import com.example.mymusic.databinding.ItemMusicVerticalBinding
-import com.example.mymusic.view.MusicList.Companion.selectedMode
+import com.example.mymusic.view.MusicListFragment.Companion.selectedMode
 import com.example.mymusic.viewModel.MusicItemViewModel
 import java.util.ArrayList
 

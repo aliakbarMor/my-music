@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.media.MediaPlayer
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -29,8 +28,9 @@ import com.example.mymusic.storage.sharedPrefs.PrefsManager
 import com.example.mymusic.utility.MediaPlayerManager
 import com.example.mymusic.utility.getMusics
 import com.example.mymusic.utility.musics
-import com.example.mymusic.view.MusicList.Companion.isCustomListMode
-import com.example.mymusic.view.MusicList.Companion.isFilteredListMode
+import com.example.mymusic.view.MusicListFragment.Companion.isCustomListMode
+import com.example.mymusic.view.MusicListFragment.Companion.isFilteredListMode
+import com.example.mymusic.view.PlaylistFragment.Companion.isInPlaylist
 import com.example.mymusic.viewModel.PlayMusicViewModel
 import java.util.*
 import java.util.concurrent.Executors
@@ -66,7 +66,7 @@ class PlayMusic : Fragment() {
         intent = Intent(contextCatch, MusicService::class.java)
 
         DaggerViewModelComponent.create().inject(this)
-        musicsList = if (isCustomListMode || isFilteredListMode) {
+        musicsList = if (isCustomListMode || isFilteredListMode || isInPlaylist) {
             musics
         } else
             getMusics(context!!)
@@ -218,7 +218,7 @@ class PlayMusic : Fragment() {
         findNavController().popBackStack()
         val bundle = Bundle()
         bundle.putInt("currentPosition", position)
-        navigationResult!!.onNavigationResult(bundle)
+        navigationResult?.onNavigationResult(bundle)
     }
 
     private val notificationReceiver: BroadcastReceiver = object : BroadcastReceiver() {

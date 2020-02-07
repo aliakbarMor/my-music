@@ -11,7 +11,7 @@ import com.bumptech.glide.Glide
 import com.example.mymusic.R
 import com.example.mymusic.storage.database.Music
 import com.example.mymusic.utility.musics
-import com.example.mymusic.view.MusicList.Companion.isFilteredListMode
+import com.example.mymusic.view.MusicListFragment.Companion.isFilteredListMode
 import com.example.mymusic.view.adapter.HorizontalMusicAdapter
 import com.example.mymusic.view.adapter.MusicAdapter
 import javax.inject.Inject

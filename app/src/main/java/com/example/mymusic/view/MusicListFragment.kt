@@ -8,7 +8,6 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import android.view.*
 import android.widget.PopupMenu
 import android.widget.Toast
@@ -47,8 +46,8 @@ import java.io.IOException
 import javax.inject.Inject
 
 
-class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSelectedListener,
-    NavigationResult {
+class MusicListFragment : Fragment(), MusicListener,
+    NavigationView.OnNavigationItemSelectedListener, NavigationResult {
 
     companion object {
         private const val MY_PERMISSIONS_MUSIC: Int = 10001
@@ -82,8 +81,8 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
     override fun onSubjectClicked(position: Int, view: View) {
         val popup = PopupMenu(activity?.applicationContext, view)
         popup.menuInflater.inflate(R.menu.subject_menu, popup.menu)
-        val item = popup.menu.findItem(R.id.addTo)
-        addPlayListsToMenuExceptFavorite(popup.menu, item.subMenu)
+        val itemAddTo = popup.menu.findItem(R.id.addTo)
+        addPlayListsToMenuExceptFavorite(popup.menu, itemAddTo.subMenu)
 
         popup.setOnMenuItemClickListener { item: MenuItem ->
             when (item.itemId) {
@@ -101,7 +100,7 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
                     startActivity(Intent.createChooser(intentShare, "Share Sound File"))
                 }
                 R.id.delete -> {
-                    val file = File(musicList[position].path)
+                    val file = File(musicList[position].path!!)
                     file.delete()
                     if (file.exists()) {
                         try {
@@ -187,6 +186,7 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
         filter()
 
         loadLastedMusic()
+        PlaylistFragment.isInPlaylist = false
 
         return binding.root
     }
@@ -203,7 +203,7 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
 
     override fun onNavigationResult(result: Bundle) {
         selectedMode = false
-        val currentSongIndex = result.getInt("currentPosition")
+//        val currentSongIndex = result.getInt("currentPosition")
 //        setNavViewAndBottomShit(currentSongIndex)
 
     }
@@ -216,7 +216,7 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
             }
             R.id.about -> {
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
-                val action = MusicListDirections.actionMusicListToAboutFragment()
+                val action = MusicListFragmentDirections.actionMusicListToAboutFragment()
                 controller.navigate(action)
             }
             R.id.addNewPlaylist -> {
@@ -226,7 +226,7 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
             else -> {
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
                 val action =
-                    MusicListDirections.actionMusicListToPlaylistFragment(menuItem.title.toString())
+                    MusicListFragmentDirections.actionMusicListToPlaylistFragment(menuItem.title.toString())
                 controller.navigate(action)
             }
         }
@@ -313,7 +313,7 @@ class MusicList : Fragment(), MusicListener, NavigationView.OnNavigationItemSele
 
     private fun goToFragmentPlayMusic(position: Int) {
         PlayMusic.navigationResult = this
-        val action = MusicListDirections.actionMusicListToPlayMusic(position)
+        val action = MusicListFragmentDirections.actionMusicListToPlayMusic(position)
         controller.navigate(action)
     }
 

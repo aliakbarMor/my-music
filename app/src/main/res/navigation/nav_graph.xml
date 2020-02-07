@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/musicList"
-        android:name="com.example.mymusic.view.MusicList"
+        android:name="com.example.mymusic.view.MusicListFragment"
         android:label="fragment_music_list"
         tools:layout="@layout/fragment_music_list" >
         <action
@@ -30,6 +30,10 @@
         <argument
             android:name="position"
             app:argType="integer" />
+        <argument
+            android:name="playlistName"
+            app:argType="string"
+            android:defaultValue="null" />
     </fragment>
     <fragment
         android:id="@+id/playlistFragment"
