@@ -80,15 +80,11 @@ class MusicNotification private constructor(private val context: Context) {
                 PendingIntent.FLAG_UPDATE_CURRENT
             )
 
-        val metaRetriever = MediaMetadataRetriever()
-        metaRetriever.setDataSource(music.path)
-        val art = metaRetriever.embeddedPicture
-
         builder
             .setContentTitle(music.title)
             .setContentText(music.artist)
             .setContentIntent(mainPendingIntent)
-            .setAutoCancel(true)
+            .setAutoCancel(false)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setSmallIcon(R.drawable.ic_music)
@@ -96,6 +92,9 @@ class MusicNotification private constructor(private val context: Context) {
             .addAction(R.mipmap.ic_pause, "pause&play", pausePendingIntent)
             .addAction(R.drawable.ic_skip_next, "skip next", skipNextPendingIntent)
 
+        val metaRetriever = MediaMetadataRetriever()
+        metaRetriever.setDataSource(music.path)
+        val art = metaRetriever.embeddedPicture
         if (art != null) {
             val songImage = BitmapFactory.decodeByteArray(art, 0, art.size)
             builder.setLargeIcon(songImage)

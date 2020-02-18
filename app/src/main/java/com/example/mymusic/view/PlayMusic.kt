@@ -125,7 +125,7 @@ class PlayMusic : Fragment() {
 
     private fun setIsFavorite() {
         Executors.newCachedThreadPool().execute {
-            val music: Music? = AppRepository.getInstance(context!!)
+            val music: Music? = AppRepository.getInstance(contextCatch)
                 .getMusic(musicsList!![position].title!!, musicsList!![position].artist!!)
             if (music == null) {
                 viewModel.isFavorite.postValue(false)
