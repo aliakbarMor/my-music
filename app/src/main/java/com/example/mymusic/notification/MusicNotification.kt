@@ -9,6 +9,8 @@ import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.os.Build
 import android.os.Bundle
+import android.widget.RemoteViews
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.navigation.NavDeepLinkBuilder
 import com.example.mymusic.R
@@ -16,6 +18,10 @@ import com.example.mymusic.storage.database.Music
 import com.example.mymusic.view.MainActivity
 
 class MusicNotification private constructor(private val context: Context) {
+
+    lateinit var notificationManager: NotificationManager
+    lateinit var builder: NotificationCompat.Builder
+    lateinit var remoteViews: RemoteViews
 
     companion object {
 
@@ -34,8 +40,9 @@ class MusicNotification private constructor(private val context: Context) {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     fun showNotification(music: Music, position: Int) {
-        val notificationManager =
+        notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val notificationChannel: NotificationChannel
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -43,7 +50,7 @@ class MusicNotification private constructor(private val context: Context) {
                 NotificationChannel("music_id", "music", NotificationManager.IMPORTANCE_HIGH)
             notificationManager.createNotificationChannel(notificationChannel)
         }
-        val builder = NotificationCompat.Builder(context, "music_id")
+        builder = NotificationCompat.Builder(context, "music_id")
 
         val bundle = Bundle()
         bundle.putInt("position", position)
@@ -79,6 +86,12 @@ class MusicNotification private constructor(private val context: Context) {
                 skipNextIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT
             )
+        remoteViews = RemoteViews(context.packageName, R.layout.notification)
+        remoteViews.setTextViewText(R.id.text_title_ntf, music.title)
+        remoteViews.setTextViewText(R.id.text_artist_ntf, music.artist)
+        remoteViews.setOnClickPendingIntent(R.id.ic_skip_previous_song, skipPreviousPendingIntent)
+        remoteViews.setOnClickPendingIntent(R.id.ic_play_and_pause_song, pausePendingIntent)
+        remoteViews.setOnClickPendingIntent(R.id.ic_skip_next_song, skipNextPendingIntent)
 
         builder
             .setContentTitle(music.title)
@@ -88,9 +101,9 @@ class MusicNotification private constructor(private val context: Context) {
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setSmallIcon(R.drawable.ic_music)
-            .addAction(R.drawable.ic_skip_previous, "skip previous", skipPreviousPendingIntent)
-            .addAction(R.mipmap.ic_pause, "pause&play", pausePendingIntent)
-            .addAction(R.drawable.ic_skip_next, "skip next", skipNextPendingIntent)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setCustomBigContentView(remoteViews)
+            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
 
         val metaRetriever = MediaMetadataRetriever()
         metaRetriever.setDataSource(music.path)
