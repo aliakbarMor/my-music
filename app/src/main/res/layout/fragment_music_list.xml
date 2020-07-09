@@ -23,6 +23,7 @@
             android:fitsSystemWindows="true">
 
             <com.google.android.material.appbar.AppBarLayout
+                android:id="@+id/appBarLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fitsSystemWindows="true"
@@ -35,7 +36,17 @@
                     app:contentScrim="@color/colorVeryLightBlue"
                     app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
+                    <ImageView
+                        android:id="@+id/image_singer"
+                        android:layout_width="match_parent"
+                        android:layout_height="340dp"
+                        android:background="@color/colorWhite"
+                        android:fitsSystemWindows="true"
+                        android:visibility="gone"
+                        app:loadImage="@{music.music.path}" />
+
                     <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/horizontalMusicList"
                         android:layout_width="match_parent"
                         android:layout_height="200dp"
                         android:layout_marginTop="?attr/actionBarSize"
@@ -215,7 +226,6 @@
                 </LinearLayout>
             </LinearLayout>
 
-
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 
@@ -228,6 +238,5 @@
             app:menu="@menu/drawer_menu" />
 
     </androidx.drawerlayout.widget.DrawerLayout>
-
 
 </layout>

@@ -30,7 +30,7 @@ import com.example.mymusic.utility.getMusics
 import com.example.mymusic.utility.musics
 import com.example.mymusic.view.MusicListFragment.Companion.isCustomListMode
 import com.example.mymusic.view.MusicListFragment.Companion.isFilteredListMode
-import com.example.mymusic.view.PlaylistFragment.Companion.isInPlaylist
+import com.example.mymusic.view.MusicListFragment.Companion.isInPlaylist
 import com.example.mymusic.viewModel.PlayMusicViewModel
 import java.util.*
 import java.util.concurrent.Executors

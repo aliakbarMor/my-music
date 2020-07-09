@@ -43,8 +43,13 @@ class LyricDialog private constructor() {
             }
 
 
+        val artistName = removeNameSiteFromMusic(artist!!)
+        val titleName = removeNameSiteFromMusic(title!!)
+        Log.d("Aaaa", artistName)
+        Log.d("Aaaa", titleName)
+
         ApiManager
-            .getLyric(artist!!, title!!)
+            .getLyric(artistName, titleName)
             .subscribeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 {
@@ -60,4 +65,11 @@ class LyricDialog private constructor() {
         alertDialog.show()
     }
 
+    private fun removeNameSiteFromMusic(name: String): String {
+        val start = name.indexOf('[')
+
+        return if (start != -1){
+            name.substring(0, start)
+        }else name
+    }
 }

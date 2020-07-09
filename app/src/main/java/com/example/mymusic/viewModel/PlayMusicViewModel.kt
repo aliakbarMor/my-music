@@ -11,6 +11,7 @@ import androidx.databinding.BindingAdapter
 import androidx.lifecycle.*
 import com.bumptech.glide.Glide
 import com.example.mymusic.R
+import com.example.mymusic.notification.MusicNotification
 import com.example.mymusic.storage.database.AppRepository
 import com.example.mymusic.storage.database.Music
 import com.example.mymusic.utility.milliToMinutes
@@ -30,6 +31,7 @@ class PlayMusicViewModel @Inject constructor() : ViewModel() {
 
     companion object {
         private val metaRetriever = MediaMetadataRetriever()
+
         @JvmStatic
         @BindingAdapter("app:loadImage")
         fun loadImage(imageView: ImageView, path: String) {
@@ -154,14 +156,19 @@ class PlayMusicViewModel @Inject constructor() : ViewModel() {
     }
 
     fun onPauseAndPlayClicked() {
+        val notification = MusicNotification.getInstance(context!!)
+
         if (music.mediaPlayer.isPlaying) {
+            notification!!.remoteViews.setImageViewResource(R.id.ic_play_and_pause_song,R.drawable.ic_play)
             isPlay.postValue(false)
             music.mediaPlayer.stop()
         } else {
+            notification!!.remoteViews.setImageViewResource(R.id.ic_play_and_pause_song,R.drawable.ic_pause)
             music.playMusic()
             isPlay.postValue(true)
             music.mediaPlayer.seekTo(currentPositionTime.value!!)
         }
+        notification.notificationManager.notify(1929, notification.builder.build())
     }
 
     fun onFavoriteClicked() {

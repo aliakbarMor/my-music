@@ -5,9 +5,13 @@ import android.annotation.SuppressLint
 import android.content.*
 import android.content.pm.PackageManager
 import android.database.Cursor
+import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.*
 import android.widget.PopupMenu
 import android.widget.Toast
@@ -17,6 +21,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.databinding.DataBindingUtil
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -32,7 +37,6 @@ import com.example.mymusic.service.MusicService
 import com.example.mymusic.storage.database.AppRepository
 import com.example.mymusic.storage.database.Music
 import com.example.mymusic.storage.sharedPrefs.PrefsManager
-import com.example.mymusic.utility.getMusics
 import com.example.mymusic.utility.musics
 import com.example.mymusic.view.adapter.MusicAdapter.Companion.musicSelected
 import com.example.mymusic.view.adapter.MusicListener
@@ -43,7 +47,9 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.navigation.NavigationView
 import java.io.File
 import java.io.IOException
+import java.util.*
 import javax.inject.Inject
+import kotlin.collections.ArrayList
 
 
 class MusicListFragment : Fragment(), MusicListener,
@@ -54,6 +60,7 @@ class MusicListFragment : Fragment(), MusicListener,
         var isCustomListMode = false
         var isFilteredListMode = false
         var selectedMode = false
+        var isInPlaylist = false
     }
 
     @Inject
@@ -61,7 +68,7 @@ class MusicListFragment : Fragment(), MusicListener,
     private lateinit var viewModel: MusicListViewModel
     private lateinit var binding: FragmentMusicListBinding
     private lateinit var navBinding: NavHeaderBinding
-    private lateinit var musicList: List<Music>
+    private var musicList: List<Music>? = null
     private lateinit var controller: NavController
     private lateinit var prefsManager: PrefsManager
     private var currentSongIndex: Int = 0
@@ -94,13 +101,13 @@ class MusicListFragment : Fragment(), MusicListener,
                 }
                 R.id.share -> {
                     val intentShare = Intent(Intent.ACTION_SEND)
-                    val uriParse = Uri.parse(musicList[position].path)
+                    val uriParse = Uri.parse(musicList!![position].path)
                     intentShare.putExtra(Intent.EXTRA_STREAM, uriParse)
                     intentShare.type = "audio/*"
                     startActivity(Intent.createChooser(intentShare, "Share Sound File"))
                 }
                 R.id.delete -> {
-                    val file = File(musicList[position].path!!)
+                    val file = File(musicList!![position].path!!)
                     file.delete()
                     if (file.exists()) {
                         try {
@@ -140,7 +147,7 @@ class MusicListFragment : Fragment(), MusicListener,
                     }
                     Toast.makeText(
                         activity,
-                        musicList[position].title.toString() + " is deleted",
+                        musicList!![position].title.toString() + " is deleted",
                         Toast.LENGTH_SHORT
                     ).show()
                     binding.music = viewModel
@@ -148,9 +155,9 @@ class MusicListFragment : Fragment(), MusicListener,
                 }
                 else -> {
                     if (item.itemId != R.id.addTo) {
-                        val music = musicList[position]
+                        val music = musicList!![position]
                         music.playListName = item.title.toString()
-                        AppRepository.getInstance(context!!).insertMusic(musicList[position])
+                        AppRepository.getInstance(context!!).insertMusic(musicList!![position])
                     }
                 }
             }
@@ -164,12 +171,24 @@ class MusicListFragment : Fragment(), MusicListener,
         savedInstanceState: Bundle?
     ): View? {
         checkPermission()
-        musicList = getMusics(activity!!.applicationContext)
         DaggerViewModelComponent.create().inject(this)
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_music_list, container, false)
         viewModel =
             ViewModelProviders.of(this, viewModelFactory).get(MusicListViewModel::class.java)
-        viewModel.musicList = musicList
+
+        val playlistName: String = MusicListFragmentArgs.fromBundle(arguments!!).playlistName
+        if (playlistName != "mainMusicList") {
+            musicList = viewModel.getMusicList(playlistName, context!!)
+            binding.horizontalMusicList.visibility = View.GONE
+            binding.appBarLayout.setBackgroundColor(Color.WHITE)
+            binding.mainToolbar.visibility = View.GONE
+            binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+            loadImg()
+            isInPlaylist = true
+        } else {
+            musicList = viewModel.getMusicList("mainMusicList", context!!)
+            isInPlaylist = false
+        }
         binding.music = viewModel
 
         navBinding = DataBindingUtil.inflate(inflater, R.layout.nav_header, container, false)
@@ -186,7 +205,6 @@ class MusicListFragment : Fragment(), MusicListener,
         filter()
 
         loadLastedMusic()
-        PlaylistFragment.isInPlaylist = false
 
         return binding.root
     }
@@ -226,7 +244,7 @@ class MusicListFragment : Fragment(), MusicListener,
             else -> {
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
                 val action =
-                    MusicListFragmentDirections.actionMusicListToPlaylistFragment(menuItem.title.toString())
+                    MusicListFragmentDirections.actionMusicListSelf(menuItem.title.toString())
                 controller.navigate(action)
             }
         }
@@ -345,21 +363,23 @@ class MusicListFragment : Fragment(), MusicListener,
     @SuppressLint("DefaultLocale")
     private fun search() {
         val filteredMusic = ArrayList<Music>()
-        for (music in musicList) {
-            if (music.title!!.toLowerCase().contains(binding.textSearch.text.toString().toLowerCase()) ||
-                music.artist!!.toLowerCase().contains(binding.textSearch.text.toString().toLowerCase())
+        for (music in musicList!!) {
+            if (music.title!!.toLowerCase()
+                    .contains(binding.textSearch.text.toString().toLowerCase()) ||
+                music.artist!!.toLowerCase()
+                    .contains(binding.textSearch.text.toString().toLowerCase())
             ) {
                 filteredMusic.add(music)
             }
         }
-        isFilteredListMode = binding.textSearch.toString() != ""
+        isFilteredListMode = binding.textSearch.text.toString() != ""
         musicAdapter.filterList(filteredMusic)
         musics = filteredMusic
     }
 
     private fun playingNextSong(position: Int) {
         isCustomListMode = true
-        musics?.add(currentSongIndex + 1, musicList[position])
+        musics?.add(currentSongIndex + 1, musicList!![position])
         if (currentSongIndex < position) {
             musics?.removeAt(position + 1)
         } else
@@ -376,8 +396,9 @@ class MusicListFragment : Fragment(), MusicListener,
             binding.actionSelectToolbar.visibility = View.VISIBLE
         } else {
             selectedMode = false
-            binding.mainToolbar.visibility = View.VISIBLE
             binding.actionSelectToolbar.visibility = View.GONE
+            if (!isInPlaylist)
+                binding.mainToolbar.visibility = View.VISIBLE
         }
 
         binding.imageDisable.setOnClickListener {
@@ -415,6 +436,24 @@ class MusicListFragment : Fragment(), MusicListener,
         toggleToolbar()
     }
 
+    private fun loadImg() {
+        binding.imageSinger.visibility = View.VISIBLE
+        if (musicList!!.isNotEmpty()) {
+            val metaRetriever = MediaMetadataRetriever()
+            val random = Random()
+            Timer().schedule(object : TimerTask() {
+                override fun run() {
+                    metaRetriever.setDataSource(musicList!![random.nextInt(musicList!!.size)].path)
+                    val art = metaRetriever.embeddedPicture
+                    if (art != null) {
+                        val songImage = BitmapFactory.decodeByteArray(art, 0, art.size)
+                        binding.imageSinger.post { binding.imageSinger.setImageBitmap(songImage) }
+                    } else binding.imageSinger.post { binding.imageSinger.setImageResource(R.drawable.ic_music) }
+                }
+            }, 0, 6000)
+        }
+    }
+
     private var musicReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
 
@@ -424,7 +463,7 @@ class MusicListFragment : Fragment(), MusicListener,
                 currentSongIndex = bundle!!.getInt("currentPosition")
                 val music = if (isCustomListMode || isFilteredListMode) {
                     musics!![currentSongIndex]
-                } else musicList[currentSongIndex]
+                } else musicList!![currentSongIndex]
                 setNavViewAndBottomShit(music)
                 prefsManager.saveLastMusicPlayed(music)
                 prefsManager.saveLastIndexMusic(currentSongIndex)

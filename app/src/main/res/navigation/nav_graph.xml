@@ -21,6 +21,14 @@
         <action
             android:id="@+id/action_musicList_to_aboutFragment"
             app:destination="@id/aboutFragment" />
+        <action
+            android:id="@+id/action_musicList_self"
+            app:destination="@id/musicList" />
+        <argument
+            android:name="playlistName"
+            app:argType="string"
+
+            android:defaultValue="mainMusicList" />
     </fragment>
     <fragment
         android:id="@+id/playMusic"
