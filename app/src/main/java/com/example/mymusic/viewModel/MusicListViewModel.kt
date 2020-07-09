@@ -3,7 +3,6 @@ package com.example.mymusic.viewModel
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
-import android.util.Log
 import android.widget.ImageView
 import android.widget.SeekBar
 import androidx.databinding.BindingAdapter
@@ -28,6 +27,7 @@ import javax.inject.Inject
 class MusicListViewModel @Inject constructor() : ViewModel() {
 
     var musicList: List<Music>? = null
+    var musicListHorizontal: List<Music>? = null
 
     var music: Music? = null
 
@@ -39,12 +39,26 @@ class MusicListViewModel @Inject constructor() : ViewModel() {
                 musicList = AppRepository.getInstance(context).getMusicsFromPlaylist(playListName)
                 musics = (musicList as java.util.ArrayList<Music>?)!!
             }
-        } else {
+        } else
             musicList = getMusics(context)
-        }
-        while (musicList == null)
+
+        while (musicList == null) {
             Thread.sleep(3)
+        }
         return musicList!!
+    }
+
+    fun getMusicListHorizontal(context: Context): List<Music> {
+        Executors.newCachedThreadPool().execute {
+            musicListHorizontal = AppRepository.getInstance(context).getMusicsByNumberOfPlayed()
+        }
+        while (musicListHorizontal == null) {
+            Thread.sleep(3)
+        }
+        if (musicListHorizontal?.size!! < 3) {
+            musicListHorizontal = musicList
+        }
+        return musicListHorizontal!!
     }
 
     companion object {
@@ -65,11 +79,13 @@ class MusicListViewModel @Inject constructor() : ViewModel() {
 
         @JvmStatic
         @BindingAdapter("bind:recyclerHorizontalMusic")
-        fun recyclerHorizontalBinding(recyclerView: RecyclerView, list: List<Music>) {
-            horizontalMusicAdapter = HorizontalMusicAdapter(list)
-            recyclerView.layoutManager =
-                LinearLayoutManager(recyclerView.context, LinearLayoutManager.HORIZONTAL, false)
-            recyclerView.adapter = horizontalMusicAdapter
+        fun recyclerHorizontalBinding(recyclerView: RecyclerView, list: List<Music>?) {
+            if (list != null) {
+                horizontalMusicAdapter = HorizontalMusicAdapter(list)
+                recyclerView.layoutManager =
+                    LinearLayoutManager(recyclerView.context, LinearLayoutManager.HORIZONTAL, false)
+                recyclerView.adapter = horizontalMusicAdapter
+            }
         }
 
 
@@ -80,7 +96,7 @@ class MusicListViewModel @Inject constructor() : ViewModel() {
             if (path != null) {
                 metaRetriever.setDataSource(path)
                 if (metaRetriever.embeddedPicture != null) {
-                    val art: ByteArray = metaRetriever.embeddedPicture
+                    val art: ByteArray = metaRetriever.embeddedPicture!!
                     val songImage = BitmapFactory.decodeByteArray(art, 0, art.size)
                     imageView.setImageBitmap(songImage)
                     val bitmapRequestBuilder = Glide

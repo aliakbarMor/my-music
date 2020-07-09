@@ -34,19 +34,21 @@ class PlayMusicViewModel @Inject constructor() : ViewModel() {
 
         @JvmStatic
         @BindingAdapter("app:loadImage")
-        fun loadImage(imageView: ImageView, path: String) {
-            metaRetriever.setDataSource(path)
-            val art = metaRetriever.embeddedPicture
-            if (art != null) {
-                val songImage = BitmapFactory.decodeByteArray(art, 0, art.size)
-                val bitmapRequestBuilder = Glide
-                    .with(imageView.context)
-                    .asBitmap()
-                    .override(1000, 1000)
-                    .load(songImage)
-                bitmapRequestBuilder.into(imageView)
-            } else {
-                imageView.setImageResource(R.drawable.ic_music)
+        fun loadImage(imageView: ImageView, path: String?) {
+            if (path != null) {
+                metaRetriever.setDataSource(path)
+                val art = metaRetriever.embeddedPicture
+                if (art != null) {
+                    val songImage = BitmapFactory.decodeByteArray(art, 0, art.size)
+                    val bitmapRequestBuilder = Glide
+                        .with(imageView.context)
+                        .asBitmap()
+                        .override(1000, 1000)
+                        .load(songImage)
+                    bitmapRequestBuilder.into(imageView)
+                } else {
+                    imageView.setImageResource(R.drawable.ic_music)
+                }
             }
         }
 
@@ -159,11 +161,17 @@ class PlayMusicViewModel @Inject constructor() : ViewModel() {
         val notification = MusicNotification.getInstance(context!!)
 
         if (music.mediaPlayer.isPlaying) {
-            notification!!.remoteViews.setImageViewResource(R.id.ic_play_and_pause_song,R.drawable.ic_play)
+            notification!!.remoteViews.setImageViewResource(
+                R.id.ic_play_and_pause_song,
+                R.drawable.ic_play
+            )
             isPlay.postValue(false)
             music.mediaPlayer.stop()
         } else {
-            notification!!.remoteViews.setImageViewResource(R.id.ic_play_and_pause_song,R.drawable.ic_pause)
+            notification!!.remoteViews.setImageViewResource(
+                R.id.ic_play_and_pause_song,
+                R.drawable.ic_pause
+            )
             music.playMusic()
             isPlay.postValue(true)
             music.mediaPlayer.seekTo(currentPositionTime.value!!)

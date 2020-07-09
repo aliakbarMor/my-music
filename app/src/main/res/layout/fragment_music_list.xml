@@ -58,7 +58,7 @@
                             android:layout_height="match_parent"
                             android:layout_marginTop="32dp"
                             app:layout_behavior="@string/appbar_scrolling_view_behavior"
-                            bind:recyclerHorizontalMusic="@{music.musicList}" />
+                            bind:recyclerHorizontalMusic="@{music.musicListHorizontal}" />
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
 

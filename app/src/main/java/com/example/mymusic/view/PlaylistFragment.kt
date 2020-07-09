@@ -45,7 +45,7 @@ class PlaylistFragment : Fragment(), MusicListener {
         savedInstanceState: Bundle?
     ): View? {
         isInPlaylist = true
-        playlistName = PlaylistFragmentArgs.fromBundle(arguments!!).playlistName
+        playlistName = PlaylistFragmentArgs.fromBundle(requireArguments()).playlistName
         Executors.newCachedThreadPool().execute {
             musicList = AppRepository.getInstance(context!!).getMusicsFromPlaylist(playlistName)
         }
@@ -68,17 +68,17 @@ class PlaylistFragment : Fragment(), MusicListener {
         return binding.root
     }
 
-    override fun onMusicClicked(position: Int) {
+    override fun onMusicClicked(position: Int, isMostPlayedList: Boolean) {
         val action =
             PlaylistFragmentDirections.actionPlaylistFragmentToPlayMusic(position, playlistName)
-        activity!!.findNavController(R.id.nav_host_fragment).navigate(action)
+        requireActivity().findNavController(R.id.nav_host_fragment).navigate(action)
     }
 
     override fun onMusicLongClicked(position: Int) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun onSubjectClicked(position: Int, view: View) {
+    override fun onSubjectClicked(position: Int, isMostPlayedList: Boolean, view: View) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 

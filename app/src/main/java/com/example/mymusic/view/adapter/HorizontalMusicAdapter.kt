@@ -30,13 +30,13 @@ class HorizontalMusicAdapter(private val list: List<Music>) :
     override fun onBindViewHolder(holder: MusicViewHolder, position: Int) {
         val music = list[position]
 
-        holder.itemView.setOnClickListener { musicListener?.onMusicClicked(position) }
+        holder.itemView.setOnClickListener { musicListener?.onMusicClicked(position, true) }
         holder.itemView.setOnLongClickListener {
             musicListener?.onMusicLongClicked(position)
             return@setOnLongClickListener true
         }
         holder.binding.imageSubject.setOnClickListener {
-            musicListener?.onSubjectClicked(position, holder.binding.imageSubject)
+            musicListener?.onSubjectClicked(position, true, holder.binding.imageSubject)
         }
 
         holder.bind(music)

@@ -61,6 +61,7 @@ class MusicListFragment : Fragment(), MusicListener,
         var isFilteredListMode = false
         var selectedMode = false
         var isInPlaylist = false
+        var onMostPlayedListClick = false
     }
 
     @Inject
@@ -73,11 +74,12 @@ class MusicListFragment : Fragment(), MusicListener,
     private lateinit var prefsManager: PrefsManager
     private var currentSongIndex: Int = 0
 
-    override fun onMusicClicked(position: Int) {
+    override fun onMusicClicked(position: Int, isMostPlayedList: Boolean) {
         if (selectedMode) {
             toggleToolbar()
         } else {
             goToFragmentPlayMusic(position)
+            onMostPlayedListClick = isMostPlayedList
         }
     }
 
@@ -85,7 +87,7 @@ class MusicListFragment : Fragment(), MusicListener,
         toggleToolbar()
     }
 
-    override fun onSubjectClicked(position: Int, view: View) {
+    override fun onSubjectClicked(position: Int, isMostPlayedList: Boolean, view: View) {
         val popup = PopupMenu(activity?.applicationContext, view)
         popup.menuInflater.inflate(R.menu.subject_menu, popup.menu)
         val itemAddTo = popup.menu.findItem(R.id.addTo)
@@ -94,6 +96,7 @@ class MusicListFragment : Fragment(), MusicListener,
         popup.setOnMenuItemClickListener { item: MenuItem ->
             when (item.itemId) {
                 R.id.play -> {
+                    onMostPlayedListClick = isMostPlayedList
                     goToFragmentPlayMusic(position)
                 }
                 R.id.playNext -> {
@@ -157,7 +160,8 @@ class MusicListFragment : Fragment(), MusicListener,
                     if (item.itemId != R.id.addTo) {
                         val music = musicList!![position]
                         music.playListName = item.title.toString()
-                        AppRepository.getInstance(context!!).insertMusic(musicList!![position])
+                        AppRepository.getInstance(requireContext())
+                            .insertMusic(musicList!![position])
                     }
                 }
             }
@@ -171,14 +175,15 @@ class MusicListFragment : Fragment(), MusicListener,
         savedInstanceState: Bundle?
     ): View? {
         checkPermission()
+        onMostPlayedListClick = false
         DaggerViewModelComponent.create().inject(this)
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_music_list, container, false)
         viewModel =
             ViewModelProviders.of(this, viewModelFactory).get(MusicListViewModel::class.java)
 
-        val playlistName: String = MusicListFragmentArgs.fromBundle(arguments!!).playlistName
+        val playlistName: String = MusicListFragmentArgs.fromBundle(requireArguments()).playlistName
         if (playlistName != "mainMusicList") {
-            musicList = viewModel.getMusicList(playlistName, context!!)
+            musicList = viewModel.getMusicList(playlistName, requireContext())
             binding.horizontalMusicList.visibility = View.GONE
             binding.appBarLayout.setBackgroundColor(Color.WHITE)
             binding.mainToolbar.visibility = View.GONE
@@ -186,9 +191,11 @@ class MusicListFragment : Fragment(), MusicListener,
             loadImg()
             isInPlaylist = true
         } else {
-            musicList = viewModel.getMusicList("mainMusicList", context!!)
+            musicList = viewModel.getMusicList("mainMusicList", requireContext())
+            viewModel.getMusicListHorizontal(requireContext())
             isInPlaylist = false
         }
+
         binding.music = viewModel
 
         navBinding = DataBindingUtil.inflate(inflater, R.layout.nav_header, container, false)
@@ -196,7 +203,7 @@ class MusicListFragment : Fragment(), MusicListener,
         binding.navView.addHeaderView(navBinding.root)
 
         controller = activity?.findNavController(R.id.nav_host_fragment)!!
-        prefsManager = PrefsManager(context!!)
+        prefsManager = PrefsManager(requireContext())
 
         addNavViewMenu()
         setOnBackClick()
@@ -205,6 +212,7 @@ class MusicListFragment : Fragment(), MusicListener,
         filter()
 
         loadLastedMusic()
+        Log.d("aaaaaaaaa", "5555555555")
 
         return binding.root
     }
@@ -215,7 +223,7 @@ class MusicListFragment : Fragment(), MusicListener,
         musicIntentFilter.addAction(MusicService.ACTION_MUSIC_STARTED)
         musicIntentFilter.addAction(MusicService.ACTION_MUSIC_COMPLETED)
         musicIntentFilter.addAction(MusicService.ACTION_MUSIC_IN_PROGRESS)
-        LocalBroadcastManager.getInstance(activity!!)
+        LocalBroadcastManager.getInstance(requireActivity())
             .registerReceiver(musicReceiver, musicIntentFilter)
     }
 
@@ -230,7 +238,7 @@ class MusicListFragment : Fragment(), MusicListener,
         when (menuItem.itemId) {
             R.id.sleepTimer -> {
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
-                SleepTimerDialog.getInstance().showDialog(activity!!)
+                SleepTimerDialog.getInstance().showDialog(requireActivity())
             }
             R.id.about -> {
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
@@ -239,7 +247,7 @@ class MusicListFragment : Fragment(), MusicListener,
             }
             R.id.addNewPlaylist -> {
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
-                AddNewPlaylistDialog.getInstance().showDialog(activity!!)
+                AddNewPlaylistDialog.getInstance().showDialog(requireActivity())
             }
             else -> {
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
@@ -268,7 +276,7 @@ class MusicListFragment : Fragment(), MusicListener,
                 musicAdapter.notifyDataSetChanged()
                 toggleToolbar()
             } else if (!controller.popBackStack()) {
-                activity!!.finish()
+                requireActivity().finish()
             }
         }
     }
@@ -282,11 +290,11 @@ class MusicListFragment : Fragment(), MusicListener,
     }
 
     private fun checkPermission() {
-        if (ContextCompat.checkSelfPermission(
-                context!!,
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
+        val havePermission = ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        ) != PackageManager.PERMISSION_GRANTED
+        if (havePermission) {
             activity?.let {
                 ActivityCompat.requestPermissions(
                     it,
@@ -294,6 +302,9 @@ class MusicListFragment : Fragment(), MusicListener,
                     MY_PERMISSIONS_MUSIC
                 )
             }
+        }
+        while (havePermission) {
+            Thread.sleep(10)
         }
     }
 
@@ -336,19 +347,21 @@ class MusicListFragment : Fragment(), MusicListener,
     }
 
     private fun addPlayListsToMenuExceptFavorite(menu: Menu, subMenu: SubMenu?) {
-        AppRepository.getInstance(context!!).allPlaylists.observe(viewLifecycleOwner, Observer {
-            if (it.isNotEmpty()) {
-                val menu1 = subMenu ?: menu
-                for (int in it.indices)
-                    menu1.removeItem(52)
-                for (int in it.indices) {
-                    if (it[int].playListName != "Favorite") {
-                        menu1.add(0, 52, Menu.NONE, it[int].playListName)
-                            .setIcon(R.drawable.ic_music)
+        AppRepository.getInstance(requireContext()).allPlaylists.observe(
+            viewLifecycleOwner,
+            Observer {
+                if (it.isNotEmpty()) {
+                    val menu1 = subMenu ?: menu
+                    for (int in it.indices)
+                        menu1.removeItem(52)
+                    for (int in it.indices) {
+                        if (it[int].playListName != "Favorite") {
+                            menu1.add(0, 52, Menu.NONE, it[int].playListName)
+                                .setIcon(R.drawable.ic_music)
+                        }
                     }
                 }
-            }
-        })
+            })
     }
 
     private fun filter() {
@@ -416,7 +429,7 @@ class MusicListFragment : Fragment(), MusicListener,
                     music.playListName = it.title.toString()
                     someMusicAddToPlaylist.add(music)
                 }
-                AppRepository.getInstance(context!!).insertSomeMusics(someMusicAddToPlaylist)
+                AppRepository.getInstance(requireContext()).insertSomeMusics(someMusicAddToPlaylist)
                 disableSelectedMode()
                 false
             }

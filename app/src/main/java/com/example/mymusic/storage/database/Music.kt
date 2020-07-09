@@ -17,11 +17,12 @@ class Music(
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0
     var playListName: String? = null
+    var numberOfPlayedSong: Long = 0
 
     @Ignore
     val mediaPlayer = MediaPlayerManager.getInstance()
-    @Ignore
 
+    @Ignore
     fun playMusic() {
         mediaPlayer.reset()
         mediaPlayer.setDataSource(path)
@@ -32,7 +33,6 @@ class Music(
     fun seekTo(position: Int) {
         mediaPlayer.seekTo(position)
     }
-
 
 
 }

@@ -39,7 +39,7 @@ class MusicAdapter(private var list: List<Music>) :
         holder.itemView.setOnClickListener {
             if (selectedMode)
                 toggleSelection(music, position)
-            musicListener?.onMusicClicked(position)
+            musicListener?.onMusicClicked(position,false)
         }
         holder.itemView.setOnLongClickListener {
             toggleSelection(music, position)
@@ -47,7 +47,7 @@ class MusicAdapter(private var list: List<Music>) :
             return@setOnLongClickListener true
         }
         holder.binding.imageSubject.setOnClickListener {
-            musicListener?.onSubjectClicked(position, holder.binding.imageSubject)
+            musicListener?.onSubjectClicked(position, false, holder.binding.imageSubject)
         }
         holder.bind(music)
     }

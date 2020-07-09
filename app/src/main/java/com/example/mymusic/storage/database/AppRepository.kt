@@ -44,12 +44,23 @@ class AppRepository private constructor(context: Context) {
         }
     }
 
-    fun getMusic(title: String, artist: String): Music {
+    fun getMusic(title: String, artist: String): Music? {
         return db.musicDAO.getMusicById(title, artist)
     }
 
     fun getMusicsFromPlaylist(playListName: String): List<Music> {
         return db.musicDAO.getMusicsFromPlaylist(playListName)
+    }
+
+    fun getMusicsByNumberOfPlayed(): List<Music> {
+        return db.musicDAO.getMusicsByNumberOfPlayed()
+    }
+    fun getMusicInMostPlayed(title: String, artist: String): Music?{
+        return db.musicDAO.getMusicInMostPlayed(title,artist)
+    }
+
+    fun updateNumberOfPlayed(title: String, artist: String, numberOfPlayedSong: Long): Int {
+        return db.musicDAO.updateNumberOfPlayed(title, artist, numberOfPlayedSong)
     }
 
     fun insertPlaylist(playlist: Playlist) {

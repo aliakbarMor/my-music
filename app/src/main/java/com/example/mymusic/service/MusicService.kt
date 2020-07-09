@@ -5,12 +5,13 @@ import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.IBinder
-import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.mymusic.notification.MusicNotification
+import com.example.mymusic.storage.database.AppRepository
 import com.example.mymusic.storage.database.Music
 import com.example.mymusic.utility.MediaPlayerManager
 import com.example.mymusic.utility.musics
+import java.util.concurrent.Executors
 
 class MusicService : Service() {
 
@@ -41,9 +42,30 @@ class MusicService : Service() {
                 MusicNotification.getInstance(applicationContext)?.showNotification(music, position)
                 playMusic(music)
                 sendBroadcasts(position, music)
+                updateNumberOfPlayed(music)
             }
         }
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    private fun updateNumberOfPlayed(music: Music) {
+        Executors.newCachedThreadPool().execute {
+            val music1 =
+                AppRepository.getInstance(applicationContext)
+                    .getMusicInMostPlayed(music.title!!, music.artist!!)
+            if (music1 == null) {
+                music.playListName = "most played"
+                music.numberOfPlayedSong = 1
+                AppRepository.getInstance(applicationContext).insertMusic(music)
+            } else {
+                AppRepository.getInstance(applicationContext)
+                    .updateNumberOfPlayed(
+                        music.title!!,
+                        music.artist!!,
+                        music1.numberOfPlayedSong + 1
+                    )
+            }
+        }
     }
 
 

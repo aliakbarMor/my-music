@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.media.MediaPlayer
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -62,16 +63,24 @@ class PlayMusic : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        contextCatch = activity!!.applicationContext
+        contextCatch = requireActivity().applicationContext
         intent = Intent(contextCatch, MusicService::class.java)
 
         DaggerViewModelComponent.create().inject(this)
-        musicsList = if (isCustomListMode || isFilteredListMode || isInPlaylist) {
-            musics
-        } else
-            getMusics(context!!)
+        if (MusicListFragment.onMostPlayedListClick) {
+            Executors.newCachedThreadPool().execute {
+                musicsList = AppRepository.getInstance(requireContext()).getMusicsByNumberOfPlayed()
+            }
+            while (musicsList==null)
+                Thread.sleep(3)
+        } else {
+            musicsList = if (isCustomListMode || isFilteredListMode || isInPlaylist) {
+                musics
+            } else
+                getMusics(requireContext())
+        }
 
-        position = PlayMusicArgs.fromBundle(arguments!!).position
+        position = PlayMusicArgs.fromBundle(requireArguments()).position
         music = musicsList!![position]
         binding =
             DataBindingUtil.inflate(inflater, R.layout.fragment_play_music, container, false)
@@ -94,7 +103,7 @@ class PlayMusic : Fragment() {
         completeMusic()
         backHandle()
 
-        val lastMusicPlayed = PrefsManager(context!!).loadLastMusicPlayed()
+        val lastMusicPlayed = PrefsManager(requireContext()).loadLastMusicPlayed()
         if (mediaPlayer.isPlaying && music.artist == lastMusicPlayed.artist && music.title == lastMusicPlayed.title) {
             return binding.root
         }
@@ -111,7 +120,7 @@ class PlayMusic : Fragment() {
         musicIntentFilter.addAction(MusicNotification.ACTION_MUSIC_SKIP_NEXT)
         musicIntentFilter.addAction(MusicNotification.ACTION_MUSIC_STOP)
         musicIntentFilter.addAction(MusicNotification.ACTION_MUSIC_SKIP_PREVIOUS)
-        activity!!.registerReceiver(notificationReceiver, musicIntentFilter)
+        requireActivity().registerReceiver(notificationReceiver, musicIntentFilter)
     }
 
     private fun setCurrentPosition() {
@@ -205,7 +214,7 @@ class PlayMusic : Fragment() {
     }
 
     private fun backHandle() {
-        requireActivity().onBackPressedDispatcher.addCallback(this,
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
                     back()
