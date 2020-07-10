@@ -11,6 +11,7 @@ import com.example.mymusic.storage.database.AppRepository
 import com.example.mymusic.storage.database.Music
 import com.example.mymusic.utility.MediaPlayerManager
 import com.example.mymusic.utility.musics
+import com.example.mymusic.view.MusicListFragment
 import java.util.concurrent.Executors
 
 class MusicService : Service() {
@@ -22,7 +23,7 @@ class MusicService : Service() {
     }
 
     private lateinit var mediaPlayer: MediaPlayer
-    private lateinit var musicsList: List<Music>
+    private var musicsList: List<Music>? = null
 
     override fun onBind(intent: Intent): IBinder {
         TODO("Return the communication channel to the service.")
@@ -35,10 +36,19 @@ class MusicService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent != null) {
-            musicsList = musics!!
+            if (MusicListFragment.onMostPlayedListClick) {
+                Executors.newCachedThreadPool().execute {
+                    musicsList =
+                        AppRepository.getInstance(applicationContext).getMusicsByNumberOfPlayed()
+                }
+            } else
+                musicsList = musics!!
+            while (musicsList==null){
+                Thread.sleep(3)
+            }
             if (intent.hasExtra("position")) {
                 val position = intent.getIntExtra("position", -1)
-                val music = musicsList[position]
+                val music = musicsList!![position]
                 MusicNotification.getInstance(applicationContext)?.showNotification(music, position)
                 playMusic(music)
                 sendBroadcasts(position, music)

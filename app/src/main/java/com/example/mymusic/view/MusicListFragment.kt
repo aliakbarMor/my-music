@@ -304,6 +304,7 @@ class MusicListFragment : Fragment(), MusicListener,
             }
         }
         while (havePermission) {
+            Log.d("aaaa","aaaaa")
             Thread.sleep(10)
         }
     }
