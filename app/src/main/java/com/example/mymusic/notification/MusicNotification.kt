@@ -48,6 +48,7 @@ class MusicNotification private constructor(private val context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             notificationChannel =
                 NotificationChannel("music_id", "music", NotificationManager.IMPORTANCE_HIGH)
+            notificationChannel.setSound(null,null)
             notificationManager.createNotificationChannel(notificationChannel)
         }
         builder = NotificationCompat.Builder(context, "music_id")

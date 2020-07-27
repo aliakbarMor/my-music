@@ -70,7 +70,6 @@ class MusicListViewModel @Inject constructor() : ViewModel() {
         @BindingAdapter("bind:recyclerMusic")
         fun recyclerBinding(recyclerView: RecyclerView, list: List<Music>) {
             musicAdapter = if (isFilteredListMode) {
-//                TODO BUG
                 MusicAdapter(musics!!)
             } else
                 MusicAdapter(list)

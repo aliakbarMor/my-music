@@ -11,7 +11,6 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import android.view.*
 import android.widget.PopupMenu
 import android.widget.Toast
@@ -24,7 +23,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -179,7 +178,7 @@ class MusicListFragment : Fragment(), MusicListener,
         DaggerViewModelComponent.create().inject(this)
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_music_list, container, false)
         viewModel =
-            ViewModelProviders.of(this, viewModelFactory).get(MusicListViewModel::class.java)
+            ViewModelProvider(this, viewModelFactory).get(MusicListViewModel::class.java)
 
         val playlistName: String = MusicListFragmentArgs.fromBundle(requireArguments()).playlistName
         if (playlistName != "mainMusicList") {
@@ -212,7 +211,6 @@ class MusicListFragment : Fragment(), MusicListener,
         filter()
 
         loadLastedMusic()
-        Log.d("aaaaaaaaa", "5555555555")
 
         return binding.root
     }
@@ -293,8 +291,8 @@ class MusicListFragment : Fragment(), MusicListener,
         val havePermission = ContextCompat.checkSelfPermission(
             requireContext(),
             Manifest.permission.READ_EXTERNAL_STORAGE
-        ) != PackageManager.PERMISSION_GRANTED
-        if (havePermission) {
+        ) == PackageManager.PERMISSION_GRANTED
+        if (!havePermission) {
             activity?.let {
                 ActivityCompat.requestPermissions(
                     it,
@@ -303,9 +301,9 @@ class MusicListFragment : Fragment(), MusicListener,
                 )
             }
         }
-        while (havePermission) {
-            Log.d("aaaa","aaaaa")
-            Thread.sleep(10)
+        if (!havePermission) {
+            Thread.sleep(100)
+            checkPermission()
         }
     }
 

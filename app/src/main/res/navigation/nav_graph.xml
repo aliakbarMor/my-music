@@ -13,8 +13,10 @@
         <action
             android:id="@+id/action_musicList_to_playMusic"
             app:destination="@id/playMusic"
-            app:enterAnim="@anim/fragment_fade_enter"
-            app:exitAnim="@anim/nav_default_exit_anim" />
+            app:enterAnim="@anim/fragment_open_enter"
+            app:exitAnim="@anim/fragment_open_exit"
+            app:popEnterAnim="@android:anim/fade_in"
+            app:popExitAnim="@android:anim/fade_out" />
         <action
             android:id="@+id/action_musicList_to_playlistFragment"
             app:destination="@id/playlistFragment" />

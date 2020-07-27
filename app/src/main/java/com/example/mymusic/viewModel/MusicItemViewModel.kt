@@ -25,6 +25,7 @@ class MusicItemViewModel(music: Music) : ViewModel() {
         @BindingAdapter("app:loadImg")
         fun loadImage(imageView: ImageView, path: String) {
             Thread(Runnable {
+                // why? Thread.sleep(100)
                 Thread.sleep(100)
                 val metaRetriever = MediaMetadataRetriever()
                 metaRetriever.setDataSource(path)

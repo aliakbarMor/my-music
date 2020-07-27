@@ -71,7 +71,7 @@ dependencies {
 
     def lifecycle_version = "2.2.0"
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
-    kapt "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
 
     def dagger2Version = '2.25.2'
     implementation "com.google.dagger:dagger:$dagger2Version"
@@ -79,8 +79,5 @@ dependencies {
     kapt "com.google.dagger:dagger-android-processor:$dagger2Version"
     implementation "com.google.dagger:dagger-android-support:$dagger2Version"
 
-    def koin_version = '2.1.5'
-    implementation "org.koin:koin-core:$koin_version"
-    implementation "org.koin:koin-core-ext:$koin_version"
 
 }
