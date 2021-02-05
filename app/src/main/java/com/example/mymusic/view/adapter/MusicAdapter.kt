@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mymusic.R
 import com.example.mymusic.storage.database.Music
@@ -24,7 +25,7 @@ class MusicAdapter(private var list: List<Music>) :
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MusicViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        val itemMusicBinding: ItemMusicVerticalBinding =
+        val itemMusicBinding:  ItemMusicVerticalBinding =
             DataBindingUtil.inflate(inflater, R.layout.item_music_vertical, parent, false)
         return MusicViewHolder(itemMusicBinding)
     }

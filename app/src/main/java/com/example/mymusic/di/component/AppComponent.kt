@@ -9,7 +9,6 @@ import javax.inject.Singleton
 @Component(modules = [MediaPlayerManager::class])
 interface AppComponent {
 
-    @Singleton
     fun mediaPlayer(): MediaPlayer
 
 }

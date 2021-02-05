@@ -4,7 +4,7 @@
     <data>
 
         <variable
-            name="music"
+            name="viewModelMusic"
             type="com.example.mymusic.viewModel.PlayMusicViewModel" />
     </data>
 
@@ -16,7 +16,7 @@
             android:id="@+id/image_singer"
             android:layout_width="match_parent"
             android:layout_height="390dp"
-            app:loadImage="@{music.music.path}" />
+            app:loadImage="@{viewModelMusic.music.path}" />
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -35,16 +35,16 @@
                 android:layout_height="25dp"
                 android:layout_marginEnd="8dp"
                 android:layout_toStartOf="@+id/btn_lyrics"
-                android:onClick="@{()-> music.onFavoriteClicked()}"
+                android:onClick="@{()-> viewModelMusic.onFavoriteClicked()}"
                 android:src="@drawable/ic_not_favorite"
-                app:loadImgFavorite="@{music.isFavorite()}" />
+                app:loadImgFavorite="@{viewModelMusic.isFavorite()}" />
 
             <ImageView
                 android:id="@+id/btn_lyrics"
                 android:layout_width="25dp"
                 android:layout_height="25dp"
                 android:layout_alignParentEnd="true"
-                android:onClick="@{()-> music.onLyricClicked()}"
+                android:onClick="@{()-> viewModelMusic.onLyricClicked()}"
                 android:src="@drawable/ic_lyric" />
         </RelativeLayout>
 
@@ -74,7 +74,7 @@
                     android:background="@color/background"
                     android:gravity="center"
                     android:hint="@string/_00_00"
-                    app:setCurrentPositionTime="@{music.currentPositionTime}" />
+                    app:setCurrentPositionTime="@{viewModelMusic.currentPositionTime}" />
 
 
                 <SeekBar
@@ -82,7 +82,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="100dp"
                     android:layout_weight="10"
-                    app:progress="@{music}" />
+                    app:progress="@{viewModelMusic}" />
 
                 <TextView
                     android:id="@+id/total_duration"
@@ -92,7 +92,7 @@
                     android:background="@color/background"
                     android:gravity="center"
                     android:hint="@string/_00_00"
-                    android:text="@{music.milliToTime(music.music.duration)}" />
+                    android:text="@{viewModelMusic.milliToTime(viewModelMusic.music.duration)}" />
 
             </LinearLayout>
 
@@ -105,7 +105,7 @@
                 android:background="@color/background"
                 android:gravity="center"
                 android:hint="@string/title"
-                android:text="@{music.music.title}"
+                android:text="@{viewModelMusic.music.title}"
                 android:textSize="20sp" />
 
             <TextView
@@ -117,7 +117,7 @@
                 android:background="@color/background"
                 android:gravity="center"
                 android:hint="@string/artist"
-                android:text="@{music.music.artist}"
+                android:text="@{viewModelMusic.music.artist}"
                 android:textSize="16sp" />
 
             <LinearLayout
@@ -133,7 +133,7 @@
                     android:layout_gravity="center"
                     android:layout_weight="0.6"
                     android:background="@color/background"
-                    android:onClick="@{()-> music.onShuffleClicked()}"
+                    android:onClick="@{()-> viewModelMusic.onShuffleClicked()}"
                     android:src="@drawable/ic_shuffle" />
 
                 <ImageButton
@@ -143,6 +143,7 @@
                     android:layout_gravity="center"
                     android:layout_weight="1"
                     android:background="@color/background"
+                    android:onClick="@{()-> viewModelMusic.skipPrevious()}"
                     android:src="@drawable/ic_skip_previous" />
 
                 <ImageView
@@ -152,11 +153,12 @@
                     android:layout_gravity="center"
                     android:layout_weight="1"
                     android:background="@color/background"
-                    android:onClick="@{()->music.onPauseAndPlayClicked()}"
+                    android:onClick="@{()->viewModelMusic.onPauseAndPlayClicked()}"
                     android:src="@mipmap/ic_pause"
-                    app:loadIconPauseAndPlay="@{music.isPlay()}" />
+                    app:loadIconPauseAndPlay="@{viewModelMusic.isPlay()}" />
 
                 <ImageButton
+                    android:onClick="@{()-> viewModelMusic.skipNext()}"
                     android:id="@+id/btn_next"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
@@ -172,9 +174,9 @@
                     android:layout_gravity="center"
                     android:layout_weight="0.6"
                     android:background="@color/background"
-                    android:onClick="@{()-> music.onRepeatClicked()}"
+                    android:onClick="@{()-> viewModelMusic.onRepeatClicked()}"
                     android:src="@drawable/ic_repeat_off"
-                    app:loadIconRepeat="@{music.isRepeat()}" />
+                    app:loadIconRepeat="@{viewModelMusic.isRepeat()}" />
             </LinearLayout>
 
         </LinearLayout>

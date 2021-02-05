@@ -11,7 +11,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.findNavController
-import com.example.mymusic.GlideManager
 import com.example.mymusic.R
 import com.example.mymusic.ViewModelFactory
 import com.example.mymusic.storage.database.AppRepository
@@ -20,7 +19,6 @@ import com.example.mymusic.databinding.FragmentPlaylistBinding
 import com.example.mymusic.di.component.DaggerViewModelComponent
 import com.example.mymusic.utility.musics
 import com.example.mymusic.view.adapter.MusicListener
-import com.example.mymusic.viewModel.MusicListViewModel
 import com.example.mymusic.viewModel.PlaylistViewModel
 import com.example.mymusic.viewModel.PlaylistViewModel.Companion.musicAdapter
 import java.util.*
@@ -47,9 +45,11 @@ class PlaylistFragment : Fragment(), MusicListener {
         isInPlaylist = true
         playlistName = PlaylistFragmentArgs.fromBundle(requireArguments()).playlistName
         Executors.newCachedThreadPool().execute {
-            musicList = AppRepository.getInstance(context!!).getMusicsFromPlaylist(playlistName)
+            musicList = AppRepository.getInstance(requireContext()).getMusicsFromPlaylist(playlistName)
         }
-        DaggerViewModelComponent.create().inject(this)
+//        DaggerViewModelComponent.create().inject(this)
+        DaggerViewModelComponent.builder().application(requireActivity().application).build().inject(this)
+
 
         binding =
             DataBindingUtil.inflate(inflater, R.layout.fragment_playlist, container, false)

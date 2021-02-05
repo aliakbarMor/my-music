@@ -32,7 +32,9 @@ fun getMusics(context: Context): List<Music> {
                 if (TextUtils.isEmpty(music.title))
                     music.title = str[1]
             }
-            list.add(music)
+            if (music.duration != null) {
+                list.add(music)
+            }
         }
         cursor.close()
     }

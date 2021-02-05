@@ -2,14 +2,14 @@ package com.example.mymusic.utility
 
 import android.media.MediaPlayer
 
-class MediaPlayerManager private constructor(){
+class MediaPlayerManager private constructor() : MediaPlayer() {
     companion object {
-        private var instance: MediaPlayer? = null
-        fun getInstance(): MediaPlayer {
+        private var instance: MediaPlayerManager? = null
+        fun getInstance(): MediaPlayerManager {
             if (instance == null) {
-                instance = MediaPlayer()
+                instance = MediaPlayerManager()
             }
-            return instance as MediaPlayer
+            return instance as MediaPlayerManager
         }
     }
 

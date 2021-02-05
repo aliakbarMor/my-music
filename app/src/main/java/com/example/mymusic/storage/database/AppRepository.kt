@@ -19,33 +19,27 @@ class AppRepository private constructor(context: Context) {
 
     private val db = AppDatabase.getInstance(context)!!
     private val executor: Executor = Executors.newCachedThreadPool()
-
     var allPlaylists: LiveData<List<Playlist>> = getAllPlaylist()
 
-    private fun getAllMusic(): LiveData<List<Music>> {
-        return db.musicDAO.getAll()
-    }
 
     fun insertMusic(music: Music) {
-        executor.execute {
-            db.musicDAO.insertMusic(music)
-        }
+        executor.execute { db.musicDAO.insertMusic(music) }
     }
 
     fun insertSomeMusics(musics: ArrayList<Music>) {
-        executor.execute {
-            db.musicDAO.insertAll(musics)
-        }
+        executor.execute { db.musicDAO.insertAll(musics) }
     }
 
     fun deleteMusic(title: String, artist: String, playListName: String) {
-        executor.execute {
-            db.musicDAO.deleteMusic(title, artist, playListName)
-        }
+        executor.execute { db.musicDAO.deleteMusic(title, artist, playListName) }
     }
 
     fun getMusic(title: String, artist: String): Music? {
         return db.musicDAO.getMusicById(title, artist)
+    }
+
+    fun isMusicInFavorite(title: String, artist: String): Music? {
+        return db.musicDAO.isMusicInFavorite(title, artist,"Favorite")
     }
 
     fun getMusicsFromPlaylist(playListName: String): List<Music> {
@@ -55,8 +49,9 @@ class AppRepository private constructor(context: Context) {
     fun getMusicsByNumberOfPlayed(): List<Music> {
         return db.musicDAO.getMusicsByNumberOfPlayed()
     }
-    fun getMusicInMostPlayed(title: String, artist: String): Music?{
-        return db.musicDAO.getMusicInMostPlayed(title,artist)
+
+    fun getMusicInMostPlayed(title: String, artist: String): Music? {
+        return db.musicDAO.getMusicInMostPlayed(title, artist)
     }
 
     fun updateNumberOfPlayed(title: String, artist: String, numberOfPlayedSong: Long): Int {
@@ -64,13 +59,7 @@ class AppRepository private constructor(context: Context) {
     }
 
     fun insertPlaylist(playlist: Playlist) {
-        executor.execute {
-            db.playlistDAO.insertPlayList(playlist)
-        }
-    }
-
-    fun getPlaylist(id: Int): Playlist {
-        return db.playlistDAO.getPlayListById(id)
+        executor.execute { db.playlistDAO.insertPlayList(playlist) }
     }
 
     private fun getAllPlaylist(): LiveData<List<Playlist>> {

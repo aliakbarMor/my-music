@@ -2,6 +2,7 @@ package com.example.mymusic.viewModel
 
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
+import android.util.Log
 import android.widget.ImageView
 import androidx.databinding.BindingAdapter
 import androidx.lifecycle.ViewModel
@@ -24,9 +25,7 @@ class MusicItemViewModel(music: Music) : ViewModel() {
         @JvmStatic
         @BindingAdapter("app:loadImg")
         fun loadImage(imageView: ImageView, path: String) {
-            Thread(Runnable {
-                // why? Thread.sleep(100)
-                Thread.sleep(100)
+            Thread {
                 val metaRetriever = MediaMetadataRetriever()
                 metaRetriever.setDataSource(path)
                 val art = metaRetriever.embeddedPicture
@@ -42,28 +41,33 @@ class MusicItemViewModel(music: Music) : ViewModel() {
                 } else {
                     imageView.post { imageView.setImageResource(R.drawable.ic_music) }
                 }
-            }).start()
+            }.start()
         }
 
         @JvmStatic
         @BindingAdapter("app:loadHorizontalIcons")
         fun loadHorizontalIcons(imageView: ImageView, path: String) {
-            Thread(Runnable {
-                val metaRetriever = MediaMetadataRetriever()
-                metaRetriever.setDataSource(path)
-                val art = metaRetriever.embeddedPicture
-                if (art != null) {
-                    val songImage = BitmapFactory.decodeByteArray(art, 0, art.size)
-                    val bitmapRequestBuilder = Glide
-                        .with(imageView.context)
-                        .asBitmap()
-                        .override(300, 300)
-                        .load(songImage)
-                    imageView.post { bitmapRequestBuilder.into(imageView) }
-                } else {
-                    imageView.post { imageView.setImageResource(R.drawable.ic_music) }
+            Thread {
+                try {
+                    val metaRetriever = MediaMetadataRetriever()
+                    metaRetriever.setDataSource(path)
+                    val art = metaRetriever.embeddedPicture
+                    if (art != null) {
+                        val songImage = BitmapFactory.decodeByteArray(art, 0, art.size)
+                        val bitmapRequestBuilder = Glide
+                            .with(imageView.context)
+                            .asBitmap()
+                            .override(300, 300)
+                            .load(songImage)
+                        imageView.post { bitmapRequestBuilder.into(imageView) }
+                    } else {
+                        imageView.post { imageView.setImageResource(R.drawable.ic_music) }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
-            }).start()
+            }
+                .start()
         }
 
     }

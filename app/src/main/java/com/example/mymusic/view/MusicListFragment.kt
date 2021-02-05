@@ -172,10 +172,10 @@ class MusicListFragment : Fragment(), MusicListener,
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         checkPermission()
         onMostPlayedListClick = false
-        DaggerViewModelComponent.create().inject(this)
+        DaggerViewModelComponent.builder().application(requireActivity().application).build().inject(this)
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_music_list, container, false)
         viewModel =
             ViewModelProvider(this, viewModelFactory).get(MusicListViewModel::class.java)
@@ -340,7 +340,7 @@ class MusicListFragment : Fragment(), MusicListener,
     }
 
     private fun goToFragmentPlayMusic(position: Int) {
-        PlayMusic.navigationResult = this
+//        PlayMusic.navigationResult = this
         val action = MusicListFragmentDirections.actionMusicListToPlayMusic(position)
         controller.navigate(action)
     }

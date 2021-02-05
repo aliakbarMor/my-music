@@ -79,5 +79,8 @@ dependencies {
     kapt "com.google.dagger:dagger-android-processor:$dagger2Version"
     implementation "com.google.dagger:dagger-android-support:$dagger2Version"
 
+    def version_coroutine = '1.3.8'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$version_coroutine"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$version_coroutine"
 
 }

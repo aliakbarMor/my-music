@@ -25,8 +25,16 @@ interface MusicDAO {
     @Query("SELECT * FROM musics WHERE title = :title and artist = :artist")
     fun getMusicById(title: String, artist: String): Music
 
+    @Query("SELECT * FROM musics WHERE title = :title and artist = :artist and playListName= :playListName")
+    fun isMusicInFavorite(title: String, artist: String, playListName: String): Music
+
+
     @Query("SELECT * FROM musics WHERE title = :title and artist = :artist and playListName = :playlistName")
-    fun getMusicInMostPlayed(title: String, artist: String, playlistName: String = "most played"): Music
+    fun getMusicInMostPlayed(
+        title: String,
+        artist: String,
+        playlistName: String = "most played"
+    ): Music
 
     @Query("SELECT * FROM musics WHERE playListName = :playlistName")
     fun getMusicsFromPlaylist(playlistName: String): List<Music>
@@ -35,7 +43,12 @@ interface MusicDAO {
     fun getMusicsByNumberOfPlayed(): List<Music>
 
     @Query("UPDATE musics SET numberOfPlayedSong = :numberOfPlayedSong WHERE title = :title and artist = :artist and playListName = :playlistName")
-    fun updateNumberOfPlayed(title: String, artist: String, numberOfPlayedSong: Long, playlistName: String = "most played"): Int
+    fun updateNumberOfPlayed(
+        title: String,
+        artist: String,
+        numberOfPlayedSong: Long,
+        playlistName: String = "most played"
+    ): Int
 
     @Query("SELECT * FROM musics")
     fun getAll(): LiveData<List<Music>>
